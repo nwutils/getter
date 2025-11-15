@@ -1,5 +1,7 @@
 # @nwutils/getter
 
+[![npm](https://img.shields.io/npm/v/@nwutils/getter/latest)](https://www.npmjs.com/package/@nwutils/getter/v/latest)
+
 Download NW.js and related binaries for Linux, MacOS and Windows.
 
 ## Getting Started
