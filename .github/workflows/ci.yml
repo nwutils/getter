@@ -36,4 +36,44 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: npm test
+        run: |
+          npm t \
+            | sed -r 's/\x1b\[[0-9;]*m//g' \
+            | sed -n '/start of coverage report/{n; :a; /end of coverage report/b; p; n; ba}' \
+            > coverage.txt
+
+          echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
+          cat coverage.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Convert coverage to markdown
+        id: markdown
+        run: |
+          # Convert the plain-text table into GitHub Markdown
+          {
+            echo "### 📊 Coverage Report"
+            echo
+            echo "| File | Line % | Branch % | Funcs % | Uncovered Lines |"
+            echo "|------|--------|----------|---------|------------------|"
+
+            # Parse table rows (skip '--------' separator lines)
+            grep '|' coverage.txt | while read -r line; do
+              # Remove leading ℹ and extra spaces
+              clean=$(echo "$line" | sed 's/^ℹ\s*//')
+              # Replace multiple spaces with single
+              clean=$(echo "$clean" | tr -s ' ')
+              # Convert " | " separators into markdown |
+              echo "| ${clean// | / | } |"
+            done
+            echo
+          } > coverage.md
+
+          echo "MARKDOWN<<EOF" >> $GITHUB_OUTPUT
+          cat coverage.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "Coverage Report"
+          message: ${{ steps.markdown.outputs.MARKDOWN }}
