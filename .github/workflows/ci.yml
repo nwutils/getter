@@ -30,7 +30,7 @@ jobs:
         uses: volta-cli/action@v4.2.1
       - name: Install dependencies
         run: npm ci
-            - name: Run tests with coverage
+      - name: Run tests with coverage
         id: run_tests
         run: |
           set -o pipefail
