@@ -36,16 +36,17 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
+        shell: bash
         run: |
           npm t \
-            | sed 's/\x1b\[[0-9;]*m//g' \
-            | awk '
-                /start of coverage report/ {printing=1; next}
-                /end of coverage report/   {printing=0}
-                printing
-              ' \
-            > coverage.txt
-
+          | sed 's/\x1b\[[0-9;]*m//g' \
+          | awk '
+            /start of coverage report/ {printing=1; next}
+            /end of coverage report/   {printing=0}
+            printing
+            ' \
+          > coverage.txt
+          
           echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
           cat coverage.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
