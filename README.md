@@ -35,3 +35,9 @@ Options
 | ffmpeg | `boolean` | `false`| If true the chromium ffmpeg is replaced by community version with proprietary codecs. |
 | logLevel | `"error" \| "warn" \| "info" \| "debug"` | `"info"`| Specify level of logging. |
 | shaSum | `boolean` | `true` | Flag to enable/disable shasum checks. |
+
+## Roadmap
+
+- Use Node.js standard libraries whenever possible.
+- Prefer to use syncronous APIs over modern APIs which have been introduced in later versions.
+- Find a way to polyfill node:test to be able to run tests in previous Node.js versions.
