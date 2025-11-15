@@ -67,7 +67,7 @@ jobs:
               echo "| ${clean// | / | } |"
             done
             echo
-            } > coverage.md
+          } > coverage.md
 
           echo "MARKDOWN<<EOF" >> $GITHUB_OUTPUT
           cat coverage.md >> $GITHUB_OUTPUT

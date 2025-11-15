@@ -36,8 +36,14 @@ Options
 | logLevel | `"error" \| "warn" \| "info" \| "debug"` | `"info"`| Specify level of logging. |
 | shaSum | `boolean` | `true` | Flag to enable/disable shasum checks. |
 
-## Roadmap
+## Contributing
+
+### External contributor
 
 - Use Node.js standard libraries whenever possible.
 - Prefer to use syncronous APIs over modern APIs which have been introduced in later versions.
-- Find a way to polyfill node:test to be able to run tests in previous Node.js versions.
+
+### Maintainer
+
+- npm trusted publishing is used for releases
+- a package is released when a maintainer creates a release note for a specific version
