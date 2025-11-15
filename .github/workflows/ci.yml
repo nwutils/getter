@@ -47,7 +47,7 @@ jobs:
         run: |
           sed -r "s/\x1B\[[0-9;]*[mK]//g" raw_test_output.txt > test_output.txt
 
-            - name: Parse coverage section and convert to markdown table
+      - name: Parse coverage section and convert to markdown table
         id: parse
         shell: bash
         run: |
@@ -72,12 +72,11 @@ jobs:
           sed 's/^i //' coverage_raw.txt | \
           sed '/^-/d' > coverage_clean.txt
 
-          # Convert ASCII lines into a clean markdown table
+          # Convert ASCII lines into markdown
           {
             echo "| File | Line % | Branch % | Funcs % | Uncovered Lines |"
             echo "|------|--------|----------|---------|------------------|"
 
-            # Extract rows that contain real coverage (those with %)
             grep '%' coverage_clean.txt | while read -r line; do
               file=$(echo "$line" | awk -F '|' '{print $1}' | xargs)
               linep=$(echo "$line" | awk -F '|' '{print $2}' | xargs)
@@ -97,7 +96,6 @@ jobs:
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          # Unique marker per OS ensures the comment is updated, not duplicated
           body-includes: "<!-- coverage-${{ matrix.os }} -->"
           edit-mode: replace
           body: |
