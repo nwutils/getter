@@ -30,14 +30,35 @@ jobs:
         uses: volta-cli/action@v4.2.1
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
+            - name: Run tests with coverage
+        id: run_tests
         run: |
-          npm t 2>&1 | tee test_output.txt
-          awk '/start of coverage report/{flag=1;next}/end of coverage report/{flag=0}flag' test_output.txt > coverage.txt
+          set -o pipefail
+          node --experimental-test-coverage --test ./tests/specs/request.test.js 2>&1 | tee raw_test_output.txt
+
+      - name: Clean ANSI colors
+        run: |
+          sed -r "s/\x1B\[[0-9;]*[mK]//g" raw_test_output.txt > test_output.txt
+
+      - name: Parse coverage section
+        id: parse
+        run: |
+          awk '
+            BEGIN { capture=0 }
+            tolower($0) ~ /start of coverage report/ { capture=1; next }
+            tolower($0) ~ /end of coverage report/ { capture=0 }
+            capture == 1 { print }
+          ' test_output.txt > coverage.txt
+
+          if [ ! -s coverage.txt ]; then
+            echo "No coverage found!"
+          fi
+
           echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
           cat coverage.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: Post coverage repository
+
+      - name: Create PR comment
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -45,3 +66,4 @@ jobs:
             ## 🧪 Test Coverage Report
             ```
             ${{ steps.parse.outputs.COVERAGE }}
+            ```
