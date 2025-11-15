@@ -31,4 +31,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run tests
-        run: npm t
+        run: |
+          npm t 2>&1 | tee test_output.txt
+          awk '/start of coverage report/{flag=1;next}/end of coverage report/{flag=0}flag' test_output.txt > coverage.txt
+          echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
+          cat coverage.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Post coverage repository
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 🧪 Test Coverage Report
+            ```
+            ${{ steps.parse.outputs.COVERAGE }}
