@@ -76,6 +76,6 @@ jobs:
       - name: Comment on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          # Unique comment per OS
+          key: coverage-${{ matrix.os }}
           header: "Coverage Report – ${{ matrix.os }}"
           message: ${{ steps.markdown.outputs.MARKDOWN }}
