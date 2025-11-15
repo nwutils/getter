@@ -1,5 +1,12 @@
 # @nwutils/getter
 
+Download NW.js and related binaries for Linux, MacOS and Windows.
+
+## Getting Started
+
+1. Install [Volta](https://volta.sh)
+1. `npm i` to install third party dependencies
+
 ## Usage
 
 ```js
