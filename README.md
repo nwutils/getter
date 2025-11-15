@@ -1,14 +1,22 @@
 # @nwutils/getter
 
+[![npm](https://img.shields.io/npm/v/@nwutils/getter/latest)](https://www.npmjs.com/package/@nwutils/getter/v/latest)
+
+Download NW.js and related binaries for Linux, MacOS and Windows.
+
+## Getting Started
+
+1. Install [Volta](https://volta.sh)
+1. `npm i` to install third party dependencies
+
 ## Usage
 
 ```js
 import get from "@nwutils/getter";
 
-get({
+await get({
     ...
 });
-
 ```
 
 ## API Reference
@@ -29,3 +37,15 @@ Options
 | ffmpeg | `boolean` | `false`| If true the chromium ffmpeg is replaced by community version with proprietary codecs. |
 | logLevel | `"error" \| "warn" \| "info" \| "debug"` | `"info"`| Specify level of logging. |
 | shaSum | `boolean` | `true` | Flag to enable/disable shasum checks. |
+
+## Contributing
+
+### External contributor
+
+- Use Node.js standard libraries whenever possible.
+- Prefer to use syncronous APIs over modern APIs which have been introduced in later versions.
+
+### Maintainer
+
+- npm trusted publishing is used for releases
+- a package is released when a maintainer creates a release note for a specific version

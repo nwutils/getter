@@ -3,7 +3,7 @@ name: ci
 on:
   pull_request:
     branches:
-    - main
+      - main
 
 permissions:
   contents: read
@@ -18,17 +18,64 @@ jobs:
     strategy:
       matrix:
         os:
-        - macos-15
-        - ubuntu-24.04
-        - windows-2025
+          - macos-15
+          - ubuntu-24.04
+          - windows-2025
       fail-fast: false
+
     runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v5
+
       - name: Setup Volta
-        uses: volta-cli/action@v4.2.1
+        uses: volta-cli/action@v4
+
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
-        run: npm t
+
+      - name: Run tests with coverage
+        id: coverage
+        shell: bash
+        run: |
+          npm t \
+            | sed 's/\x1b\[[0-9;]*m//g' \
+            | awk '
+                /start of coverage report/ {printing=1; next}
+                /end of coverage report/   {printing=0}
+                printing
+              ' > coverage.txt
+
+          echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
+          cat coverage.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Convert coverage to markdown
+        id: markdown
+        shell: bash
+        run: |
+          {
+            echo "### 📊 Coverage Report — ${{ matrix.os }}"
+            echo
+            echo "| File | Line % | Branch % | Funcs % | Uncovered Lines |"
+            echo "|------|--------|----------|---------|------------------|"
+            grep '|' coverage.txt | \
+            grep -vE "file\s*\|\s*line|----" | \
+            while read -r line; do
+              clean=$(echo "$line" | sed 's/^ℹ\s*//' | tr -s ' ')
+              echo "| ${clean// | / | } |"
+            done
+            echo
+          } > coverage.md
+
+          echo "MARKDOWN<<EOF" >> $GITHUB_OUTPUT
+          cat coverage.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          key: coverage-${{ matrix.os }}
+          header: "Coverage Report – ${{ matrix.os }}"
+          message: ${{ steps.markdown.outputs.MARKDOWN }}

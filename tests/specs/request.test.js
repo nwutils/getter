@@ -23,12 +23,7 @@ describe("request test suite", function () {
 
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-        await new Promise((resolve, reject) => {
-            request("http://localhost:8080/test.txt", filePath, function (error) {
-                if (error) return reject(error);
-                return resolve();
-            });
-        });
+        await request("http://localhost:8080/test.txt", filePath);
 
         assert.ok(fs.existsSync(filePath), "File should exist after download");
     });
