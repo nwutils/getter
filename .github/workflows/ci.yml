@@ -47,11 +47,11 @@ jobs:
         run: |
           sed -r "s/\x1B\[[0-9;]*[mK]//g" raw_test_output.txt > test_output.txt
 
-      - name: Parse coverage section and convert to markdown table
+            - name: Parse coverage section and convert to markdown table
         id: parse
         shell: bash
         run: |
-          # Extract coverage block
+          # Extract coverage block between markers (case-insensitive)
           awk '
             BEGIN { capture=0 }
             tolower($0) ~ /start of coverage report/ { capture=1; next }
@@ -59,7 +59,7 @@ jobs:
             capture == 1 { print }
           ' test_output.txt > coverage_raw.txt
 
-          # If nothing found, fallback
+          # If nothing was found, write a fallback message
           if [ ! -s coverage_raw.txt ]; then
             echo "⚠️ No coverage found" > coverage_md.txt
             echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
@@ -68,26 +68,77 @@ jobs:
             exit 0
           fi
 
-          # Remove leading "i " chars and dashed dividers
-          sed 's/^i //' coverage_raw.txt | \
-          sed '/^-/d' > coverage_clean.txt
+          # Remove leading "i " markers, dashed divider lines, and trim
+          sed 's/^i //' coverage_raw.txt | sed '/^[-[:space:]]*$/d' > coverage_clean.txt
 
-          # Convert ASCII lines into markdown
+          # Remove the repeated header row like: "file | line % | branch % | funcs % | uncovered lines"
+          sed -i '/file[[:space:]]*|[[:space:]]*line %/I d' coverage_clean.txt || true
+
+          # Keep only rows that look like real data: either contain a '%' (coverage numbers)
+          # or the "all files" summary line
+          grep -E '%' coverage_clean.txt > coverage_rows.txt || true
+          grep -Ei '^all files' coverage_clean.txt >> coverage_rows.txt || true
+
+          # If still empty, fallback
+          if [ ! -s coverage_rows.txt ]; then
+            echo "⚠️ Coverage block found but no parsable rows." > coverage_md.txt
+            echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
+            cat coverage_md.txt >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Build markdown table header
           {
             echo "| File | Line % | Branch % | Funcs % | Uncovered Lines |"
             echo "|------|--------|----------|---------|------------------|"
 
-            grep '%' coverage_clean.txt | while read -r line; do
-              file=$(echo "$line" | awk -F '|' '{print $1}' | xargs)
-              linep=$(echo "$line" | awk -F '|' '{print $2}' | xargs)
-              branchp=$(echo "$line" | awk -F '|' '{print $3}' | xargs)
-              funcp=$(echo "$line" | awk -F '|' '{print $4}' | xargs)
-              miss=$(echo "$line" | awk -F '|' '{print $5}' | xargs)
+            # Normalize and output each data row as a markdown row
+            while IFS= read -r line; do
+              # trim
+              line=$(echo "$line" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
 
+              # If the row uses '|' separators, parse using them
+              if echo "$line" | grep -q '|'; then
+                file=$(echo "$line" | cut -d'|' -f1 | xargs)
+                linep=$(echo "$line" | cut -d'|' -f2 | xargs)
+                branchp=$(echo "$line" | cut -d'|' -f3 | xargs)
+                funcp=$(echo "$line" | cut -d'|' -f4 | xargs)
+                miss=$(echo "$line" | cut -d'|' -f5- | xargs)
+              else
+                # Fallback: split by whitespace assuming last cols are numeric/percent and missing list
+                # e.g. "request.js    72.00   57.14   42.86   20-23 31-34"
+                # Extract last 3-4 tokens as percentages/missed
+                # NF = number of fields
+                # linep = NF-3, branchp = NF-2, funcp = NF-1, miss = last field(s) (if any)
+                nf=$(echo "$line" | awk '{print NF}')
+                if [ "$nf" -ge 4 ]; then
+                  linep=$(echo "$line" | awk '{print $(NF-3)}')
+                  branchp=$(echo "$line" | awk '{print $(NF-2)}')
+                  funcp=$(echo "$line" | awk '{print $(NF-1)}')
+                  miss=$(echo "$line" | awk '{for(i=NF;i>=NF;i--) printf $i; print ""}')
+                  # file = everything except the last 3 fields
+                  file=$(echo "$line" | awk '{for(i=1;i<=NF-3;i++) printf $i (i==NF-3?"" " "); print ""}' | xargs)
+                else
+                  # can't parse properly; treat whole line as file
+                  file="$line"
+                  linep=" "
+                  branchp=" "
+                  funcp=" "
+                  miss=" "
+                fi
+              fi
+
+              # Normalize file path indentation (replace multiple spaces with / where appropriate)
+              file=$(echo "$file" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+
+              # Print the markdown table row
               echo "| $file | $linep | $branchp | $funcp | $miss |"
-            done
+            done < coverage_rows.txt
+
           } > coverage_md.txt
 
+          # Expose the markdown through the workflow output
           echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
           cat coverage_md.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
