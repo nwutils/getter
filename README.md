@@ -12,10 +12,9 @@ Download NW.js and related binaries for Linux, MacOS and Windows.
 ```js
 import get from "@nwutils/getter";
 
-get({
+await get({
     ...
 });
-
 ```
 
 ## API Reference
