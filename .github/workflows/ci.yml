@@ -60,13 +60,14 @@ jobs:
             echo
             echo "| File | Line % | Branch % | Funcs % | Uncovered Lines |"
             echo "|------|--------|----------|---------|------------------|"
-            tail -n +3 coverage.txt | grep '|' coverage.txt | while read -r line; do
-              clean=$(echo "$line" | sed 's/^ℹ\s*//')
-              clean=$(echo "$clean" | tr -s ' ')
+            grep '|' coverage.txt | \
+            grep -vE "file\s*\|\s*line|----" | \
+            while read -r line; do
+              clean=$(echo "$line" | sed 's/^ℹ\s*//' | tr -s ' ')
               echo "| ${clean// | / | } |"
             done
             echo
-          } > coverage.md
+            } > coverage.md
 
           echo "MARKDOWN<<EOF" >> $GITHUB_OUTPUT
           cat coverage.md >> $GITHUB_OUTPUT
