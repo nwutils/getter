@@ -38,8 +38,12 @@ jobs:
       - name: Run tests with coverage
         run: |
           npm t \
-            | sed -r 's/\x1b\[[0-9;]*m//g' \
-            | sed -n '/start of coverage report/{n; :a; /end of coverage report/b; p; n; ba}' \
+            | sed 's/\x1b\[[0-9;]*m//g' \
+            | awk '
+                /start of coverage report/ {printing=1; next}
+                /end of coverage report/   {printing=0}
+                printing
+              ' \
             > coverage.txt
 
           echo "COVERAGE<<EOF" >> $GITHUB_OUTPUT
