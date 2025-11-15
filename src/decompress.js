@@ -8,23 +8,28 @@ import yauzl from 'yauzl-promise';
 
 /**
  * Decompresses a file at `filePath` to `cacheDir` directory.
+ * @async
+ * @function
  * @param {string} filePath  - file path to compressed binary
  * @param {string} cacheDir  - directory to decompress into
+ * @throws {Error}
+ * @returns {Promise<void>}
  */
 export default async function decompress(filePath, cacheDir) {
   if (filePath.endsWith('.zip')) {
     await unzip(filePath, cacheDir);
   } else {
-    tar.extract({
+    await tar.extract({
       file: filePath,
-      C: cacheDir,
-      sync: true,
+      C: cacheDir
     });
   }
 }
 
 /**
  * Get file mode from entry. Reference implementation is [here](https://github.com/fpsqdb/zip-lib/blob/ac447d269218d396e05cd7072d0e9cd82b5ec52c/src/unzip.ts#L380).
+ * @async
+ * @function
  * @param  {yauzl.Entry} entry  - Yauzl entry
  * @returns {number}             - entry's file mode
  */
@@ -42,40 +47,43 @@ function modeFromEntry(entry) {
  * @function
  * @param  {string}        zippedFile  - file path to .zip file
  * @param  {string}        cacheDir    - directory to unzip in
+ * @throws {Error}
  * @returns {Promise<void>}
  */
 async function unzip(zippedFile, cacheDir) {
   const zip = await yauzl.open(zippedFile);
   let entry = await zip.readEntry();
-  const symlinks = []; // Array to hold symbolic link entries
+  /* Array to hold symbolic link entries */
+  const symlinks = [];
 
   while (entry !== null) {
     let entryPathAbs = path.join(cacheDir, entry.filename);
-    // Check if entry is a symbolic link
+    /* Check if entry is a symbolic link */
     const isSymlink = ((modeFromEntry(entry) & 0o170000) === 0o120000);
 
     if (isSymlink) {
-      // Store symlink entries to process later
+      /* Store symlink entries to process later */
       symlinks.push(entry);
     } else {
-      // Handle regular files and directories
+      /* Handle regular files and directories */
       await fs.promises.mkdir(path.dirname(entryPathAbs), {recursive: true});
-      if (!entry.filename.endsWith('/')) { // Skip directories
+       /* Skip directories */
+      if (!entry.filename.endsWith('/')) {
         const readStream = await entry.openReadStream();
         const writeStream = fs.createWriteStream(entryPathAbs);
         await stream.promises.pipeline(readStream, writeStream);
 
-        // Set file permissions after the file has been written
+        /* Set file permissions after the file has been written */
         const mode = modeFromEntry(entry);
         await fs.promises.chmod(entryPathAbs, mode);
       }
     }
 
-    // Read next entry
+    /* Read next entry */
     entry = await zip.readEntry();
   }
 
-  // Process symbolic links after all other files have been extracted
+  /* Process symbolic links after all other files have been extracted */
   for (const symlinkEntry of symlinks) {
     let entryPathAbs = path.join(cacheDir, symlinkEntry.filename);
     const readStream = await symlinkEntry.openReadStream();
@@ -84,11 +92,11 @@ async function unzip(zippedFile, cacheDir) {
     await new Promise(resolve => readStream.on('end', resolve));
     const linkTarget = Buffer.concat(chunks).toString('utf8').trim();
 
-    // Check if the symlink or a file/directory already exists at the destination
+    /* Check if the symlink or a file/directory already exists at the destination */
     if (fs.existsSync(entryPathAbs)) {
-      //skip
+      /* skip */
     } else {
-      // Create symbolic link
+      /* Create symbolic link */
       await fs.promises.symlink(linkTarget, entryPathAbs);
     }
   }

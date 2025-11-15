@@ -4,13 +4,15 @@ import request from './request.js';
 
 /**
  * Download NW.js's Node.js headers.
+ * @async
+ * @function
  * @param  {string}          downloadUrl  - Download server
  * @param  {string}          version      - Runtime version
  * @param  {string}          cacheDir     - Directory to store NW binaries
  * @throws {Error}                        - When download fails
- * @returns {string}                      - path of compressed file which contains the Node headers.
+ * @returns {Promise<string>}             - path of compressed file which contains the Node headers.
  */
-export default function nw(downloadUrl, version, cacheDir) {
+export default async function nw(downloadUrl, version, cacheDir) {
 
   /**
    * Name of directory which contains Node headers.
@@ -42,11 +44,5 @@ export default function nw(downloadUrl, version, cacheDir) {
     nwFile
   );
 
-  request(url, nwFileAbs, function (error) {
-    if (error) {
-      throw error;
-    } else {
-      return nwFileAbs;
-    }
-  });
+  await request(url, nwFileAbs);
 }

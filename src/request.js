@@ -1,50 +1,36 @@
-import fs from "node:fs";
-import process from "node:process";
-import http from "node:http";
-import https from "node:https";
-import stream from "node:stream";
+import fs from 'node:fs';
+import process from 'node:process';
+import stream from 'node:stream';
+
+import axios from 'axios';
 
 /**
- * Download from `url`, save to `filePath`.
- *
+ * Download from `url` and save at `filePath`.
+ * @async
  * @function
- * @param {string} url - Download server
- * @param {string} filePath - file path of downloaded content
- * @param {(error) => void} callback - callback function
- * @returns {void}
+ * @param  {string}        url       - Download server
+ * @param  {string}        filePath  - file path of downloaded content
+ * @returns {Promise<void>}
  */
-export default function request(url, filePath, callback) {
+export default async function request(url, filePath) {
+
   const writeStream = fs.createWriteStream(filePath);
 
-  process.on("SIGINT", function () {
+  /* Listen for SIGINT (Ctrl+C) */
+  process.on('SIGINT', function () {
+    /* Delete file if it exists. This prevents unnecessary `Central Directory not found` errors. */
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
     process.exit();
   });
 
-  // Choose correct client based on URL
-  const client = url.startsWith("https:") ? https : http;
-
-  const req = client.get(url, function (res) {
-    if (res.statusCode !== 200) {
-      writeStream.close();
-      fs.unlink(filePath, function () {});
-      return callback(new Error(`Request failed with status ${res.statusCode}`));
-    }
-
-    stream.pipeline(res, writeStream, function (err) {
-      if (err) {
-        fs.unlink(filePath, function () {});
-        return callback(err);
-      }
-      return callback(null);
-    });
+  const response = await axios({
+    method: 'get',
+    url: url,
+    responseType: 'stream'
   });
 
-  req.on("error", function (err) {
-    writeStream.close();
-    fs.unlink(filePath, function () {});
-    callback(err);
-  });
+  await stream.promises.pipeline(response.data, writeStream);
+
 }

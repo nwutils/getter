@@ -1,51 +1,103 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import url from 'node:url';
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import url from "node:url";
 
-import decompress from './decompress.js';
-import ffmpeg from './ffmpeg.js';
-import node from './node.js';
-import nw from './nw.js';
-import verify from './verify.js';
+import semver from "semver";
+
+import decompress from "./decompress.js";
+import ffmpeg from "./ffmpeg.js";
+import node from "./node.js";
+import nw from "./nw.js";
+import request from "./request.js";
+import verify from "./verify.js";
 
 /**
- * @typedef {object} GetOptions
- * @property {string | "latest" | "stable" | "lts"} [version = "latest"]                  Runtime version
- * @property {"normal" | "sdk"}                     [flavor = "normal"]                   Build flavor
- * @property {"linux" | "osx" | "win"}              [platform]                            Target platform
- * @property {"ia32" | "x64" | "arm64"}             [arch]                                Target arch
- * @property {string}                               [downloadUrl = "https://dl.nwjs.io"]  Download server
- * @property {string}                               [cacheDir = "./cache"]                Cache directory
- * @property {boolean}                              [cache = true]                        If false, remove cache and redownload.
- * @property {boolean}                              [ffmpeg = false]                      If true, ffmpeg is not downloaded.
- * @property {false | "gyp"}                        [nativeAddon = false]                 Rebuild native modules
- * @property {string}                               [logLevel = 'info']                   User defined log level.
- * @property {boolean}                              [shaSum = true]                       If true shasum is enabled, otherwise disabled.
+ * @typedef {object} Options
+ * @property {string | "latest" | "stable" | "lts"} version                    Runtime version
+ * @property {"normal" | "sdk"}                     flavor                     Build flavor
+ * @property {"linux" | "osx" | "win"}              platform                   Target platform
+ * @property {"ia32" | "x64" | "arm64"}             arch                       Target arch
+ * @property {"https://dl.nwjs.io"}                 downloadUrl                Download server
+ * @property {"https://nwjs.io/versions.json"}      manifestUrl                Manifest URL
+ * @property {string}                               cacheDir                   Cache directory
+ * @property {boolean}                              cache                      If false, remove cache and redownload.
+ * @property {boolean}                              ffmpeg                     If true, ffmpeg is not downloaded.
+ * @property {boolean}                              nativeAddon                If true, download node headers.
+ * @property {boolean}                              shaSum                     If true shasum is enabled, otherwise disabled.
  */
 
 /**
- * Get binaries.
+ * Get NW.js and related binaries for Linux, MacOS and Windows.
  * @async
  * @function
- * @param  {GetOptions}    options  Get mode options
+ * @param  {Options}    options  Get mode options
  * @returns {Promise<void>}
  */
 async function get(options) {
 
+  /* If `options.cacheDir` exists, then `true`. Otherwise, it is `false`. */
+  if (fs.existsSync(options.cacheDir) === false) {
+    await fs.promises.mkdir(options.cacheDir, { recursive: true });
+  }
+
+  const manifestFilePath = path.resolve(options.cacheDir, "manifest.json");
+  await request(options.manifestUrl, manifestFilePath);
+  const manifestData = JSON.parse(await fs.promises.readFile(manifestFilePath, "utf-8"));
+
+  if (options.version === "latest" | options.version === "stable" | options.version === "lts") {
+    options.version = manifestData[options.version].slice(1);
+  } else if (semver.valid(semver.coerce(options.version))) {
+    options.version = semver.coerce(options.version).version;
+  } else {
+    throw new Error('Expected "options.version" to be "latest", "stable", "lts" or a valid semver version. Received: ' + options.version);
+  }
+
+  if (options.flavor !== "normal" && options.flavor !== "sdk") {
+    throw new Error('Expected "options.flavor" to be "normal" or "sdk". Received: ' + options.flavor);
+  }
+
+  if (options.platform !== "linux" && options.platform !== "osx" && options.platform !== "win") {
+    throw new Error('Expected "options.platform" to be "linux", "osx" or "win". Received: ' + options.platform);
+  }
+
+  if (options.arch !== "ia32" && options.arch !== "x64" && options.arch !== "arm64") {
+    throw new Error('Expected "options.arch" to be "ia32", "x64" or "arm64". Received: ' + options.arch);
+  }
+
+  if (typeof options.downloadUrl !== "string") {
+    throw new Error('Expected "options.downloadUrl" to be a string. Received: ' + options.downloadUrl);
+  }
+
+  if (typeof options.manifestUrl !== "string") {
+    throw new Error('Expected "options.manifestUrl" to be a string. Received: ' + options.manifestUrl);
+  }
+
+  if (typeof options.cacheDir !== "string") {
+    throw new Error('Expected "options.cacheDir" to be a string. Received: ' + options.cacheDir);
+  }
+
+  if (typeof options.cache !== "boolean") {
+    throw new Error('Expected "options.cache" to be a boolean. Received: ' + options.cache);
+  }
+
+  if (typeof options.ffmpeg !== "boolean") {
+    throw new Error('Expected "options.ffmpeg" to be a boolean. Received: ' + options.ffmpeg);
+  }
+
+  if (typeof options.nativeAddon !== "boolean") {
+    throw new Error('Expected "options.nativeAddon" to be a boolean. Received: ' + options.nativeAddon);
+  }
+
+  if (typeof options.shaSum !== "boolean") {
+    throw new Error('Expected "options.shaSum" to be a boolean. Received: ' + options.shaSum);
+  }
+
   const uri = new url.URL(options.downloadUrl);
 
   /* Download server is the cached directory. */
-  if (uri.protocol === 'file:') {
-    options.cacheDir = path.resolve(decodeURIComponent(options.downloadUrl.slice('file://'.length)));
-  }
-
-  /**
-   * If `options.cacheDir` exists, then `true`. Otherwise, it is `false`.
-   * @type {boolean}
-   */
-  const cacheDirExists = fs.existsSync(options.cacheDir);
-  if (cacheDirExists === false) {
-    await fs.promises.mkdir(options.cacheDir, { recursive: true });
+  if (uri.protocol === "file:") {
+    options.cacheDir = path.resolve(decodeURIComponent(options.downloadUrl.slice("file://".length)));
   }
 
   /**
@@ -54,17 +106,17 @@ async function get(options) {
    */
   let nwFilePath = path.resolve(
     options.cacheDir,
-    `nwjs${options.flavor === 'sdk' ? '-sdk' : ''}-v${options.version}-${options.platform}-${options.arch}.${options.platform === 'linux' ? 'tar.gz' : 'zip'
+    `nwjs${options.flavor === "sdk" ? "-sdk" : ""}-v${options.version}-${options.platform}-${options.arch}.${options.platform === "linux" ? "tar.gz" : "zip"
     }`,
   );
 
   /**
-   * File path to directory which contain NW.js and related binaries.
+   * File path to directory which contains NW.js and related binaries.
    * @type {string}
    */
   let nwDirPath = path.resolve(
     options.cacheDir,
-    `nwjs${options.flavor === 'sdk' ? '-sdk' : ''}-v${options.version}-${options.platform}-${options.arch}`,
+    `nwjs${options.flavor === "sdk" ? "-sdk" : ""}-v${options.version}-${options.platform}-${options.arch}`,
   );
 
   // If `options.cache` is false, then remove the compressed binary.
@@ -81,12 +133,8 @@ async function get(options) {
   // This is important since the community ffmpeg builds have specific licensing constraints.
   await fs.promises.rm(nwDirPath, { recursive: true, force: true });
 
-  /**
-   * If the compressed binary exists, then `true`. Otherwise, it is `false`.
-   * @type {boolean}
-   */
-  const nwFilePathExists = fs.existsSync(nwFilePath);
-  if (nwFilePathExists === false) {
+  /* If the compressed binary exists, then `true`. Otherwise, it is `false`. */
+  if (fs.existsSync(nwFilePath) === false) {
     nwFilePath = await nw(options.downloadUrl, options.version, options.flavor, options.platform, options.arch, options.cacheDir);
   }
 
@@ -97,7 +145,6 @@ async function get(options) {
     `${options.cacheDir}/shasum/${options.version}.txt`,
     options.cacheDir,
     options.ffmpeg,
-    options.logLevel,
     options.shaSum,
   );
 
@@ -120,15 +167,11 @@ async function get(options) {
       });
     }
 
-    /**
-     * If the compressed binary exists, then `true`. Otherwise, it is `false`.
-     * @type {boolean}
-     */
-    const ffmpegFilePathExists = fs.existsSync(ffmpegFilePath);
-    if (ffmpegFilePathExists === false) {
+    /* If the compressed binary exists, then `true`. Otherwise, it is `false`. */
+    if (fs.existsSync(ffmpegFilePath) === false) {
       // Do not update the options.downloadUrl with the ffmpeg URL here. Doing so would lead to error when options.ffmpeg and options.nativeAddon are both enabled.
       const downloadUrl =
-        'https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download';
+        "https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download";
       ffmpegFilePath = await ffmpeg(downloadUrl, options.version, options.platform, options.arch, options.cacheDir);
     }
 
@@ -138,14 +181,14 @@ async function get(options) {
      * Platform dependant file name of FFmpeg binary.
      * @type {string}
      */
-    let ffmpegFileName = '';
+    let ffmpegFileName = "";
 
-    if (options.platform === 'linux') {
-      ffmpegFileName = 'libffmpeg.so';
-    } else if (options.platform === 'win') {
-      ffmpegFileName = 'ffmpeg.dll';
-    } else if (options.platform === 'osx') {
-      ffmpegFileName = 'libffmpeg.dylib';
+    if (options.platform === "linux") {
+      ffmpegFileName = "libffmpeg.so";
+    } else if (options.platform === "win") {
+      ffmpegFileName = "ffmpeg.dll";
+    } else if (options.platform === "osx") {
+      ffmpegFileName = "libffmpeg.dylib";
     }
 
     /**
@@ -158,21 +201,21 @@ async function get(options) {
      * File path of where FFmpeg will be copied to.
      * @type {string}
      */
-    let ffmpegBinaryDest = '';
+    let ffmpegBinaryDest = "";
 
-    if (options.platform === 'linux') {
-      ffmpegBinaryDest = path.resolve(nwDirPath, 'lib', ffmpegFileName);
-    } else if (options.platform === 'win') {
+    if (options.platform === "linux") {
+      ffmpegBinaryDest = path.resolve(nwDirPath, "lib", ffmpegFileName);
+    } else if (options.platform === "win") {
       ffmpegBinaryDest = path.resolve(nwDirPath, ffmpegFileName);
-    } else if (options.platform === 'osx') {
+    } else if (options.platform === "osx") {
       ffmpegBinaryDest = path.resolve(
         nwDirPath,
-        'nwjs.app',
-        'Contents',
-        'Frameworks',
-        'nwjs Framework.framework',
-        'Versions',
-        'Current',
+        "nwjs.app",
+        "Contents",
+        "Frameworks",
+        "nwjs Framework.framework",
+        "Versions",
+        "Current",
         ffmpegFileName,
       );
     }
@@ -181,10 +224,10 @@ async function get(options) {
 
   }
 
-  if (options.nativeAddon === 'gyp') {
+  if (options.nativeAddon === true) {
 
     /**
-     * File path to NW'js Node headers tarball.
+     * File path to NW.js Node headers tarball.
      * @type {string}
      */
     let nodeFilePath = path.resolve(
@@ -200,17 +243,12 @@ async function get(options) {
       });
     }
 
-    /**
-     * If the compressed binary exists, then `true`. Otherwise, it is `false`.
-     * @type {boolean}
-     */
-    const nodeFilePathExists = fs.existsSync(nodeFilePath);
-    if (nodeFilePathExists === false) {
+    /* If the compressed binary exists, then `true`. Otherwise, it is `false`. */
+    if (fs.existsSync(nodeFilePath) === false) {
       nodeFilePath = await node(options.downloadUrl, options.version, options.cacheDir);
     }
 
     await decompress(nodeFilePath, options.cacheDir);
-
   }
 }
 
