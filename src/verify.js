@@ -6,16 +6,17 @@ import request from './request.js';
 
 /**
  * Verify the SHA256 checksum of downloaded artifacts.
+ * @async
+ * @function
  * @param {string} shaUrl - URL to get the shasum text file from.
  * @param {string} shaOut - File path to shasum text file.
  * @param {string} cacheDir - File path to cache directory.
  * @param {boolean} ffmpeg - Toggle between community (true) and official (false) ffmpeg binary
- * @param {string} logLevel - User defined log level.
  * @param {boolean} shaSum - Throws error if true, otherwise logs a warning. 
  * @throws {Error}
  * @returns {Promise<boolean>} - Returns true if the checksums match.
  */
-export default async function verify(shaUrl, shaOut, cacheDir, ffmpeg, logLevel, shaSum) {
+export default async function verify(shaUrl, shaOut, cacheDir, ffmpeg, shaSum) {
   const shaOutExists = fs.existsSync(shaOut);
 
   if (shaOutExists === false) {

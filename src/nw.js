@@ -5,6 +5,8 @@ import request from './request.js';
 
 /**
  * Download NW.js binary.
+ * @async
+ * @function
  * @param  {string}          downloadUrl  - Download server
  * @param  {string}          version      - Runtime version
  * @param  {string}          flavor       - Runtime build flavor
@@ -12,9 +14,9 @@ import request from './request.js';
  * @param  {string}          arch         - NW supported architecture
  * @param  {string}          cacheDir     - Directory to store NW binaries
  * @throws {Error}                        - When download fails
- * @returns {string}                      - Path of compressed file which contains NW.js binaries.
+ * @returns {Promise<string>}             - Path of compressed file which contains NW.js binaries.
  */
-export default function nw(downloadUrl, version, flavor, platform, arch, cacheDir) {
+export default async function nw(downloadUrl, version, flavor, platform, arch, cacheDir) {
 
     /**
      * Name of directory which contains NW.js binaries.
@@ -53,11 +55,5 @@ export default function nw(downloadUrl, version, flavor, platform, arch, cacheDi
         nwFile
     );
 
-    request(url, nwFileAbs, function (error) {
-        if (error) {
-            throw error;
-        } else {
-            return nwFileAbs;
-        } 
-    });
+    await request(url, nwFileAbs);
 }

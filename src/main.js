@@ -9,7 +9,7 @@ import nw from './nw.js';
 import verify from './verify.js';
 
 /**
- * @typedef {object} GetOptions
+ * @typedef {object} Options
  * @property {string | "latest" | "stable" | "lts"} [version = "latest"]                  Runtime version
  * @property {"normal" | "sdk"}                     [flavor = "normal"]                   Build flavor
  * @property {"linux" | "osx" | "win"}              [platform]                            Target platform
@@ -18,19 +18,22 @@ import verify from './verify.js';
  * @property {string}                               [cacheDir = "./cache"]                Cache directory
  * @property {boolean}                              [cache = true]                        If false, remove cache and redownload.
  * @property {boolean}                              [ffmpeg = false]                      If true, ffmpeg is not downloaded.
- * @property {false | "gyp"}                        [nativeAddon = false]                 Rebuild native modules
- * @property {string}                               [logLevel = 'info']                   User defined log level.
+ * @property {false | "gyp"}                        [nativeAddon = false]                 If true, download node headers.
  * @property {boolean}                              [shaSum = true]                       If true shasum is enabled, otherwise disabled.
  */
 
 /**
- * Get binaries.
+ * Get NW.js and related binaries for Linux, MacOS and Windows.
  * @async
  * @function
- * @param  {GetOptions}    options  Get mode options
+ * @param  {Options}    options  Get mode options
  * @returns {Promise<void>}
  */
 async function get(options) {
+
+  if (options.version === "latest") {
+    
+  } 
 
   const uri = new url.URL(options.downloadUrl);
 
@@ -59,7 +62,7 @@ async function get(options) {
   );
 
   /**
-   * File path to directory which contain NW.js and related binaries.
+   * File path to directory which contains NW.js and related binaries.
    * @type {string}
    */
   let nwDirPath = path.resolve(
@@ -97,7 +100,6 @@ async function get(options) {
     `${options.cacheDir}/shasum/${options.version}.txt`,
     options.cacheDir,
     options.ffmpeg,
-    options.logLevel,
     options.shaSum,
   );
 

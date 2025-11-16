@@ -25,7 +25,6 @@ Options
 
 | Name | Type    | Default   | Description |
 | ---- | ------- | --------- | ----------- |
-| mode | `"get" \| "run" \| "build"` | `"build"` | Choose between get, run or build mode |
 | version | `string \| "latest" \| "stable"` | `"latest"` | Runtime version |
 | flavor | `"normal" \| "sdk"` | `"normal"` | Runtime flavor |
 | platform | `"linux" \| "osx" \| "win"` | | Host platform |
@@ -35,7 +34,6 @@ Options
 | cacheDir | `string` | `"./cache"` | Directory to cache NW binaries |
 | cache | `boolean` | `true`| If true the existing cache is used. Otherwise it removes and redownloads it. |
 | ffmpeg | `boolean` | `false`| If true the chromium ffmpeg is replaced by community version with proprietary codecs. |
-| logLevel | `"error" \| "warn" \| "info" \| "debug"` | `"info"`| Specify level of logging. |
 | shaSum | `boolean` | `true` | Flag to enable/disable shasum checks. |
 
 ## Contributing

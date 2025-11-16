@@ -5,7 +5,7 @@ import stream from 'node:stream';
 import axios from 'axios';
 
 /**
- * Download from `url`.
+ * Download from `url` and save at `filePath`.
  * @async
  * @function
  * @param  {string}        url       - Download server

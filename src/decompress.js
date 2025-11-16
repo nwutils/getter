@@ -8,23 +8,28 @@ import yauzl from 'yauzl-promise';
 
 /**
  * Decompresses a file at `filePath` to `cacheDir` directory.
+ * @async
+ * @function
  * @param {string} filePath  - file path to compressed binary
  * @param {string} cacheDir  - directory to decompress into
+ * @throws {Error}
+ * @returns {Promise<void>}
  */
 export default async function decompress(filePath, cacheDir) {
   if (filePath.endsWith('.zip')) {
     await unzip(filePath, cacheDir);
   } else {
-    tar.extract({
+    await tar.extract({
       file: filePath,
-      C: cacheDir,
-      sync: true,
+      C: cacheDir
     });
   }
 }
 
 /**
  * Get file mode from entry. Reference implementation is [here](https://github.com/fpsqdb/zip-lib/blob/ac447d269218d396e05cd7072d0e9cd82b5ec52c/src/unzip.ts#L380).
+ * @async
+ * @function
  * @param  {yauzl.Entry} entry  - Yauzl entry
  * @returns {number}             - entry's file mode
  */
@@ -42,6 +47,7 @@ function modeFromEntry(entry) {
  * @function
  * @param  {string}        zippedFile  - file path to .zip file
  * @param  {string}        cacheDir    - directory to unzip in
+ * @throws {Error}
  * @returns {Promise<void>}
  */
 async function unzip(zippedFile, cacheDir) {
