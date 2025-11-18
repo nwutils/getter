@@ -1,16 +1,16 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import url from 'node:url';
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import url from "node:url";
 
-import axios from 'axios';
+import axios from "axios";
 import semver from "semver";
 
-import decompress from './decompress.js';
-import ffmpeg from './ffmpeg.js';
-import node from './node.js';
-import nw from './nw.js';
-import verify from './verify.js';
+import decompress from "./decompress.js";
+import ffmpeg from "./ffmpeg.js";
+import node from "./node.js";
+import nw from "./nw.js";
+import verify from "./verify.js";
 
 /**
  * @typedef {object} Options
@@ -50,24 +50,24 @@ async function get(options) {
   }
 
   const PLATFORM_KV = {
-    darwin: 'osx',
-    linux: 'linux',
-    win32: 'win',
+    darwin: "osx",
+    linux: "linux",
+    win32: "win",
   };
   options.platform = PLATFORM_KV[process.platform];
 
   const ARCH_KV = {
-    x64: 'x64',
-    ia32: 'ia32',
-    arm64: 'arm64',
+    x64: "x64",
+    ia32: "ia32",
+    arm64: "arm64",
   };
   options.arch = ARCH_KV[process.arch];
 
   const uri = new url.URL(options.downloadUrl);
 
   /* Download server is the cached directory. */
-  if (uri.protocol === 'file:') {
-    options.cacheDir = path.resolve(decodeURIComponent(options.downloadUrl.slice('file://'.length)));
+  if (uri.protocol === "file:") {
+    options.cacheDir = path.resolve(decodeURIComponent(options.downloadUrl.slice("file://".length)));
   }
 
   /* If `options.cacheDir` exists, then `true`. Otherwise, it is `false`. */
@@ -81,7 +81,7 @@ async function get(options) {
    */
   let nwFilePath = path.resolve(
     options.cacheDir,
-    `nwjs${options.flavor === 'sdk' ? '-sdk' : ''}-v${options.version}-${options.platform}-${options.arch}.${options.platform === 'linux' ? 'tar.gz' : 'zip'
+    `nwjs${options.flavor === "sdk" ? "-sdk" : ""}-v${options.version}-${options.platform}-${options.arch}.${options.platform === "linux" ? "tar.gz" : "zip"
     }`,
   );
 
@@ -91,7 +91,7 @@ async function get(options) {
    */
   let nwDirPath = path.resolve(
     options.cacheDir,
-    `nwjs${options.flavor === 'sdk' ? '-sdk' : ''}-v${options.version}-${options.platform}-${options.arch}`,
+    `nwjs${options.flavor === "sdk" ? "-sdk" : ""}-v${options.version}-${options.platform}-${options.arch}`,
   );
 
   // If `options.cache` is false, then remove the compressed binary.
@@ -146,7 +146,7 @@ async function get(options) {
     if (fs.existsSync(ffmpegFilePath) === false) {
       // Do not update the options.downloadUrl with the ffmpeg URL here. Doing so would lead to error when options.ffmpeg and options.nativeAddon are both enabled.
       const downloadUrl =
-        'https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download';
+        "https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download";
       ffmpegFilePath = await ffmpeg(downloadUrl, options.version, options.platform, options.arch, options.cacheDir);
     }
 
@@ -156,14 +156,14 @@ async function get(options) {
      * Platform dependant file name of FFmpeg binary.
      * @type {string}
      */
-    let ffmpegFileName = '';
+    let ffmpegFileName = "";
 
-    if (options.platform === 'linux') {
-      ffmpegFileName = 'libffmpeg.so';
-    } else if (options.platform === 'win') {
-      ffmpegFileName = 'ffmpeg.dll';
-    } else if (options.platform === 'osx') {
-      ffmpegFileName = 'libffmpeg.dylib';
+    if (options.platform === "linux") {
+      ffmpegFileName = "libffmpeg.so";
+    } else if (options.platform === "win") {
+      ffmpegFileName = "ffmpeg.dll";
+    } else if (options.platform === "osx") {
+      ffmpegFileName = "libffmpeg.dylib";
     }
 
     /**
@@ -176,21 +176,21 @@ async function get(options) {
      * File path of where FFmpeg will be copied to.
      * @type {string}
      */
-    let ffmpegBinaryDest = '';
+    let ffmpegBinaryDest = "";
 
-    if (options.platform === 'linux') {
-      ffmpegBinaryDest = path.resolve(nwDirPath, 'lib', ffmpegFileName);
-    } else if (options.platform === 'win') {
+    if (options.platform === "linux") {
+      ffmpegBinaryDest = path.resolve(nwDirPath, "lib", ffmpegFileName);
+    } else if (options.platform === "win") {
       ffmpegBinaryDest = path.resolve(nwDirPath, ffmpegFileName);
-    } else if (options.platform === 'osx') {
+    } else if (options.platform === "osx") {
       ffmpegBinaryDest = path.resolve(
         nwDirPath,
-        'nwjs.app',
-        'Contents',
-        'Frameworks',
-        'nwjs Framework.framework',
-        'Versions',
-        'Current',
+        "nwjs.app",
+        "Contents",
+        "Frameworks",
+        "nwjs Framework.framework",
+        "Versions",
+        "Current",
         ffmpegFileName,
       );
     }
@@ -202,7 +202,7 @@ async function get(options) {
   if (options.nativeAddon === true) {
 
     /**
-     * File path to NW'js Node headers tarball.
+     * File path to NW"js Node headers tarball.
      * @type {string}
      */
     let nodeFilePath = path.resolve(
