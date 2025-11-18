@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 import url from 'node:url';
+
+import axios from 'axios';
+import semver from "semver";
 
 import decompress from './decompress.js';
 import ffmpeg from './ffmpeg.js';
@@ -10,16 +14,17 @@ import verify from './verify.js';
 
 /**
  * @typedef {object} Options
- * @property {string | "latest" | "stable" | "lts"} [version = "latest"]                  Runtime version
- * @property {"normal" | "sdk"}                     [flavor = "normal"]                   Build flavor
- * @property {"linux" | "osx" | "win"}              [platform]                            Target platform
- * @property {"ia32" | "x64" | "arm64"}             [arch]                                Target arch
- * @property {string}                               [downloadUrl = "https://dl.nwjs.io"]  Download server
- * @property {string}                               [cacheDir = "./cache"]                Cache directory
- * @property {boolean}                              [cache = true]                        If false, remove cache and redownload.
- * @property {boolean}                              [ffmpeg = false]                      If true, ffmpeg is not downloaded.
- * @property {false | "gyp"}                        [nativeAddon = false]                 If true, download node headers.
- * @property {boolean}                              [shaSum = true]                       If true shasum is enabled, otherwise disabled.
+ * @property {string | "latest" | "stable" | "lts"} [version = "latest"]                            Runtime version
+ * @property {"normal" | "sdk"}                     [flavor = "normal"]                             Build flavor
+ * @property {"linux" | "osx" | "win"}              [platform]                                      Target platform
+ * @property {"ia32" | "x64" | "arm64"}             [arch]                                          Target arch
+ * @property {string}                               [downloadUrl = "https://dl.nwjs.io"]            Download server
+ * @property {string}                               [manifestUrl = "https://nwjs.io/versions.json"] Manifest URL
+ * @property {string}                               [cacheDir = "./cache"]                          Cache directory
+ * @property {boolean}                              [cache = true]                                  If false, remove cache and redownload.
+ * @property {boolean}                              [ffmpeg = false]                                If true, ffmpeg is not downloaded.
+ * @property {boolean}                              [nativeAddon = false]                           If true, download node headers.
+ * @property {boolean}                              [shaSum = true]                                 If true shasum is enabled, otherwise disabled.
  */
 
 /**
@@ -31,9 +36,32 @@ import verify from './verify.js';
  */
 async function get(options) {
 
-  if (options.version === "latest") {
-    
-  } 
+  const manifestResponse = await axios.get(options.manifestUrl);
+  const manifestData = manifestResponse.data;
+
+  if (options.version === "latest" | options.version === "stable" | options.version === "lts") {
+    options.version = manifestData[options.version];
+  } else if (semver.valid(semver.coerce(options.version))) {
+    options.version = semver.coerce(options.version).version;
+  }
+
+  if (!options.flavor === "normal" && !options.flavor === "sdk") {
+    options.flavor = "normal";
+  }
+
+  const PLATFORM_KV = {
+    darwin: 'osx',
+    linux: 'linux',
+    win32: 'win',
+  };
+  options.platform = PLATFORM_KV[process.platform];
+
+  const ARCH_KV = {
+    x64: 'x64',
+    ia32: 'ia32',
+    arm64: 'arm64',
+  };
+  options.arch = ARCH_KV[process.arch];
 
   const uri = new url.URL(options.downloadUrl);
 
@@ -42,12 +70,8 @@ async function get(options) {
     options.cacheDir = path.resolve(decodeURIComponent(options.downloadUrl.slice('file://'.length)));
   }
 
-  /**
-   * If `options.cacheDir` exists, then `true`. Otherwise, it is `false`.
-   * @type {boolean}
-   */
-  const cacheDirExists = fs.existsSync(options.cacheDir);
-  if (cacheDirExists === false) {
+  /* If `options.cacheDir` exists, then `true`. Otherwise, it is `false`. */
+  if (fs.existsSync(options.cacheDir) === false) {
     await fs.promises.mkdir(options.cacheDir, { recursive: true });
   }
 
@@ -84,12 +108,8 @@ async function get(options) {
   // This is important since the community ffmpeg builds have specific licensing constraints.
   await fs.promises.rm(nwDirPath, { recursive: true, force: true });
 
-  /**
-   * If the compressed binary exists, then `true`. Otherwise, it is `false`.
-   * @type {boolean}
-   */
-  const nwFilePathExists = fs.existsSync(nwFilePath);
-  if (nwFilePathExists === false) {
+  /* If the compressed binary exists, then `true`. Otherwise, it is `false`. */
+  if (fs.existsSync(nwFilePath) === false) {
     nwFilePath = await nw(options.downloadUrl, options.version, options.flavor, options.platform, options.arch, options.cacheDir);
   }
 
@@ -122,12 +142,8 @@ async function get(options) {
       });
     }
 
-    /**
-     * If the compressed binary exists, then `true`. Otherwise, it is `false`.
-     * @type {boolean}
-     */
-    const ffmpegFilePathExists = fs.existsSync(ffmpegFilePath);
-    if (ffmpegFilePathExists === false) {
+    /* If the compressed binary exists, then `true`. Otherwise, it is `false`. */
+    if (fs.existsSync(ffmpegFilePath) === false) {
       // Do not update the options.downloadUrl with the ffmpeg URL here. Doing so would lead to error when options.ffmpeg and options.nativeAddon are both enabled.
       const downloadUrl =
         'https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download';
@@ -183,7 +199,7 @@ async function get(options) {
 
   }
 
-  if (options.nativeAddon === 'gyp') {
+  if (options.nativeAddon === true) {
 
     /**
      * File path to NW'js Node headers tarball.
@@ -202,12 +218,8 @@ async function get(options) {
       });
     }
 
-    /**
-     * If the compressed binary exists, then `true`. Otherwise, it is `false`.
-     * @type {boolean}
-     */
-    const nodeFilePathExists = fs.existsSync(nodeFilePath);
-    if (nodeFilePathExists === false) {
+    /* If the compressed binary exists, then `true`. Otherwise, it is `false`. */
+    if (fs.existsSync(nodeFilePath) === false) {
       nodeFilePath = await node(options.downloadUrl, options.version, options.cacheDir);
     }
 
