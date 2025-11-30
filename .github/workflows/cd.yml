@@ -1,0 +1,31 @@
+name: cd
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: googleapis/release-please-action@v4.4.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/release-please/config.json
+          manifest-file: .github/release-please/manifest.json
+      - uses: actions/checkout@v6.0.0
+        if: ${{ steps.release.outputs.release_created }}
+      - uses: actions/setup-node@v6.0.0
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+        if: ${{ steps.release.outputs.release_created }}
+      - run: npm ci
+        if: ${{ steps.release.outputs.release_created }}
+      - run: npm publish --tag latest --provenance --access public
+        if: ${{ steps.release.outputs.release_created }}
