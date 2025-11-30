@@ -46,7 +46,7 @@ async function get(options) {
   const manifestData = JSON.parse(await fs.promises.readFile(manifestFilePath, "utf-8"));
 
   if (options.version === "latest" | options.version === "stable" | options.version === "lts") {
-    options.version = manifestData[options.version];
+    options.version = manifestData[options.version].slice(1);
   } else if (semver.valid(semver.coerce(options.version))) {
     options.version = semver.coerce(options.version).version;
   } else {
@@ -92,20 +92,6 @@ async function get(options) {
   if (typeof options.shaSum !== "boolean") {
     throw new Error('Expected "options.shaSum" to be a boolean. Received: ' + options.shaSum);
   }
-
-  const PLATFORM_KV = {
-    darwin: "osx",
-    linux: "linux",
-    win32: "win",
-  };
-  options.platform = options.platform ?? PLATFORM_KV[process.platform];
-
-  const ARCH_KV = {
-    x64: "x64",
-    ia32: "ia32",
-    arm64: "arm64",
-  };
-  options.arch = ARCH_KV[process.arch];
 
   const uri = new url.URL(options.downloadUrl);
 
