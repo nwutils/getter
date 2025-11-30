@@ -34,7 +34,7 @@
   "homepage": "https://github.com/nwutils/getter",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nwutils/getter.git"
+    "url": "git+https://github.com/nwutils/getter.git"
   },
   "scripts": {
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"tests/**/*\" \"tests/specs/*.test.js\""
