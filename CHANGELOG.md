@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/nwutils/getter/compare/v0.1.4...v0.1.5) (2025-11-30)
+
+
+### Chores
+
+* enable OIDC ([a8aa7df](https://github.com/nwutils/getter/commit/a8aa7dfbafff961f9b5f3f95d6592e207f039739))
+
 ## [0.1.4](https://github.com/nwutils/getter/compare/v0.1.3...v0.1.4) (2025-11-30)
 
 
