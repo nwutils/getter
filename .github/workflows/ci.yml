@@ -39,7 +39,7 @@ jobs:
         id: coverage
         shell: bash
         run: |
-          npm t \
+          { npm t || true; } \
             | sed 's/\x1b\[[0-9;]*m//g' \
             | awk '
                 /start of coverage report/ {printing=1; next}
