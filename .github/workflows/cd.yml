@@ -12,15 +12,12 @@ jobs:
   publish:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.0
 
       - uses: actions/setup-node@v6.0.0
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-
-      # Ensure npm 11.5.1 or later is installed
-      - name: Update npm
-        run: npm install -g npm@latest
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm publish --tag latest --provenance --access public
