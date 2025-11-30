@@ -3,28 +3,28 @@ import path from "node:path";
 import process from "node:process";
 import url from "node:url";
 
-import axios from "axios";
 import semver from "semver";
 
 import decompress from "./decompress.js";
 import ffmpeg from "./ffmpeg.js";
 import node from "./node.js";
 import nw from "./nw.js";
+import request from "./request.js";
 import verify from "./verify.js";
 
 /**
  * @typedef {object} Options
- * @property {string | "latest" | "stable" | "lts"} [version = "latest"]                            Runtime version
- * @property {"normal" | "sdk"}                     [flavor = "normal"]                             Build flavor
- * @property {"linux" | "osx" | "win"}              [platform]                                      Target platform
- * @property {"ia32" | "x64" | "arm64"}             [arch]                                          Target arch
- * @property {string}                               [downloadUrl = "https://dl.nwjs.io"]            Download server
- * @property {string}                               [manifestUrl = "https://nwjs.io/versions.json"] Manifest URL
- * @property {string}                               [cacheDir = "./cache"]                          Cache directory
- * @property {boolean}                              [cache = true]                                  If false, remove cache and redownload.
- * @property {boolean}                              [ffmpeg = false]                                If true, ffmpeg is not downloaded.
- * @property {boolean}                              [nativeAddon = false]                           If true, download node headers.
- * @property {boolean}                              [shaSum = true]                                 If true shasum is enabled, otherwise disabled.
+ * @property {string | "latest" | "stable" | "lts"} version                    Runtime version
+ * @property {"normal" | "sdk"}                     flavor                     Build flavor
+ * @property {"linux" | "osx" | "win"}              platform                   Target platform
+ * @property {"ia32" | "x64" | "arm64"}             arch                       Target arch
+ * @property {"https://dl.nwjs.io"}                 downloadUrl                Download server
+ * @property {"https://nwjs.io/versions.json"}      manifestUrl                Manifest URL
+ * @property {string}                               cacheDir                   Cache directory
+ * @property {boolean}                              cache                      If false, remove cache and redownload.
+ * @property {boolean}                              ffmpeg                     If true, ffmpeg is not downloaded.
+ * @property {boolean}                              nativeAddon                If true, download node headers.
+ * @property {boolean}                              shaSum                     If true shasum is enabled, otherwise disabled.
  */
 
 /**
@@ -36,17 +36,61 @@ import verify from "./verify.js";
  */
 async function get(options) {
 
-  const manifestResponse = await axios.get(options.manifestUrl);
-  const manifestData = manifestResponse.data;
+  /* If `options.cacheDir` exists, then `true`. Otherwise, it is `false`. */
+  if (fs.existsSync(options.cacheDir) === false) {
+    await fs.promises.mkdir(options.cacheDir, { recursive: true });
+  }
+
+  const manifestFilePath = path.resolve(options.cacheDir, "manifest.json");
+  await request(options.manifestUrl, manifestFilePath);
+  const manifestData = JSON.parse(await fs.promises.readFile(manifestFilePath, "utf-8"));
 
   if (options.version === "latest" | options.version === "stable" | options.version === "lts") {
     options.version = manifestData[options.version];
   } else if (semver.valid(semver.coerce(options.version))) {
     options.version = semver.coerce(options.version).version;
+  } else {
+    throw new Error('Expected "options.version" to be "latest", "stable", "lts" or a valid semver version. Received: ' + options.version);
   }
 
-  if (!options.flavor === "normal" && !options.flavor === "sdk") {
-    options.flavor = "normal";
+  if (options.flavor !== "normal" && options.flavor !== "sdk") {
+    throw new Error('Expected "options.flavor" to be "normal" or "sdk". Received: ' + options.flavor);
+  }
+
+  if (options.platform !== "linux" && options.platform !== "osx" && options.platform !== "win") {
+    throw new Error('Expected "options.platform" to be "linux", "osx" or "win". Received: ' + options.platform);
+  }
+
+  if (options.arch !== "ia32" && options.arch !== "x64" && options.arch !== "arm64") {
+    throw new Error('Expected "options.arch" to be "ia32", "x64" or "arm64". Received: ' + options.arch);
+  }
+
+  if (typeof options.downloadUrl !== "string") {
+    throw new Error('Expected "options.downloadUrl" to be a string. Received: ' + options.downloadUrl);
+  }
+
+  if (typeof options.manifestUrl !== "string") {
+    throw new Error('Expected "options.manifestUrl" to be a string. Received: ' + options.manifestUrl);
+  }
+
+  if (typeof options.cacheDir !== "string") {
+    throw new Error('Expected "options.cacheDir" to be a string. Received: ' + options.cacheDir);
+  }
+
+  if (typeof options.cache !== "boolean") {
+    throw new Error('Expected "options.cache" to be a boolean. Received: ' + options.cache);
+  }
+
+  if (typeof options.ffmpeg !== "boolean") {
+    throw new Error('Expected "options.ffmpeg" to be a boolean. Received: ' + options.ffmpeg);
+  }
+
+  if (typeof options.nativeAddon !== "boolean") {
+    throw new Error('Expected "options.nativeAddon" to be a boolean. Received: ' + options.nativeAddon);
+  }
+
+  if (typeof options.shaSum !== "boolean") {
+    throw new Error('Expected "options.shaSum" to be a boolean. Received: ' + options.shaSum);
   }
 
   const PLATFORM_KV = {
@@ -54,7 +98,7 @@ async function get(options) {
     linux: "linux",
     win32: "win",
   };
-  options.platform = PLATFORM_KV[process.platform];
+  options.platform = options.platform ?? PLATFORM_KV[process.platform];
 
   const ARCH_KV = {
     x64: "x64",
@@ -68,11 +112,6 @@ async function get(options) {
   /* Download server is the cached directory. */
   if (uri.protocol === "file:") {
     options.cacheDir = path.resolve(decodeURIComponent(options.downloadUrl.slice("file://".length)));
-  }
-
-  /* If `options.cacheDir` exists, then `true`. Otherwise, it is `false`. */
-  if (fs.existsSync(options.cacheDir) === false) {
-    await fs.promises.mkdir(options.cacheDir, { recursive: true });
   }
 
   /**
@@ -202,7 +241,7 @@ async function get(options) {
   if (options.nativeAddon === true) {
 
     /**
-     * File path to NW"js Node headers tarball.
+     * File path to NW.js Node headers tarball.
      * @type {string}
      */
     let nodeFilePath = path.resolve(
@@ -224,7 +263,6 @@ async function get(options) {
     }
 
     await decompress(nodeFilePath, options.cacheDir);
-
   }
 }
 
