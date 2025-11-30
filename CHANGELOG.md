@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/nwutils/getter/compare/v0.1.2...v0.1.3) (2025-11-30)
+
+
+### Chores
+
+* **ci:** add id: release ([c7d9c1c](https://github.com/nwutils/getter/commit/c7d9c1c1182682ee547cda1e3a3da729193b1904))
+
 ## [0.1.2](https://github.com/nwutils/getter/compare/v0.1.1...v0.1.2) (2025-11-30)
 
 
