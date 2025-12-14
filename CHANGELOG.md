@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/nwutils/getter/compare/v0.1.5...v0.1.6) (2025-12-14)
+
+
+### Chores
+
+* **dependabot:** daily -&gt; monthly ([97deb87](https://github.com/nwutils/getter/commit/97deb8756dc1733dcba43f4830a5a9b1c2f337ab))
+
 ## [0.1.5](https://github.com/nwutils/getter/compare/v0.1.4...v0.1.5) (2025-11-30)
 
 
