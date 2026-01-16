@@ -41,6 +41,22 @@ describe("request test suite", function () {
         assert.strictEqual(fs.existsSync(filePath), false, "Partial file should be deleted on SIGINT");
     });
 
+    it("rejects with error when status code is not 200", async function () {
+        const filePath = path.resolve("./tests/fixtures/cache/nonexistent.txt");
+
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+        await assert.rejects(
+            async () => {
+                await request("http://localhost:8080/nonexistent.txt", filePath);
+            },
+            {
+                name: "Error",
+                message: "Request failed. Status code: 404"
+            }
+        );
+    });
+
     after(async function () {
         await new Promise(resolve => testServer.close(resolve));
         console.log("[ DEBUG ] Stopping test server for request tests...");
