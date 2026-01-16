@@ -71,6 +71,31 @@ describe("request test suite", function () {
         );
     });
 
+    it("rejects with error when response stream fails", async function () {
+        const filePath = path.resolve("./tests/fixtures/cache/response_error.txt");
+
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+        await assert.rejects(
+            async () => {
+                await request("http://localhost:8080/error", filePath);
+            },
+            {
+                name: "Error"
+            }
+        );
+    });
+
+    it("follows redirect and downloads file", async function () {
+        const filePath = path.resolve("./tests/fixtures/cache/redirected.txt");
+
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+        await request("http://localhost:8080/redirect", filePath);
+
+        assert.ok(fs.existsSync(filePath), "File should exist after redirect");
+    });
+
     after(async function () {
         await new Promise(resolve => testServer.close(resolve));
         console.log("[ DEBUG ] Stopping test server for request tests...");

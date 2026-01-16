@@ -15,6 +15,13 @@ const server = http.createServer((req, res) => {
         res.end("Could not read file");
       })
       .pipe(res);
+  } else if (req.url === "/redirect") {
+    res.writeHead(301, { "Location": "http://localhost:8080/request_test.txt" });
+    res.end();
+  } else if (req.url === "/error") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.write("some data");
+    res.destroy(new Error("Simulated response error"));
   } else {
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Not found");
