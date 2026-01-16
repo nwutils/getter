@@ -22,10 +22,6 @@ describe("request test suite", function () {
 
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
-        if (fs.existsSync(filePath)) {
-            fs.rmSync(filePath);
-        }
-
         await request("http://localhost:8080/request_test.txt", filePath);
 
         assert.ok(fs.existsSync(filePath), "File should exist after download");
@@ -33,10 +29,6 @@ describe("request test suite", function () {
 
     it("deletes partially downloaded file on SIGINT (Ctrl + C)", async function () {
         const filePath = path.resolve("./tests/fixtures/cache/partial.txt");
-
-        if (fs.existsSync(filePath)) {
-            fs.rmSync(filePath);
-        }
 
         const child = child_process.spawn("node", ["./tests/fixtures/sigint.js"], {
             stdio: "ignore" // no logs needed
