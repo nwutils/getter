@@ -57,6 +57,20 @@ describe("request test suite", function () {
         );
     });
 
+    it("rejects with error when write stream fails", async function () {
+        // Try to write to an existing directory instead of a file
+        const filePath = path.resolve("./tests/fixtures/cache");
+
+        await assert.rejects(
+            async () => {
+                await request("http://localhost:8080/request_test.txt", filePath);
+            },
+            {
+                code: "EISDIR"
+            }
+        );
+    });
+
     after(async function () {
         await new Promise(resolve => testServer.close(resolve));
         console.log("[ DEBUG ] Stopping test server for request tests...");

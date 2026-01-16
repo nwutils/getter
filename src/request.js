@@ -17,6 +17,12 @@ export default function request(url, filePath) {
   return new Promise((resolve, reject) => {
     const writeStream = fs.createWriteStream(filePath);
 
+    /* Handle writeStream errors immediately */
+    writeStream.on('error', (err) => {
+      cleanup();
+      reject(err);
+    });
+
     /* Ctrl+C cleanup */
     const onSigInt = () => {
       writeStream.destroy();
@@ -55,11 +61,6 @@ export default function request(url, filePath) {
         writeStream.on('finish', () => {
           cleanup();
           resolve();
-        });
-
-        writeStream.on('error', (err) => {
-          cleanup();
-          reject(err);
         });
 
         res.on('error', (err) => {
