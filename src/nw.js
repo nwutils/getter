@@ -56,4 +56,6 @@ export default async function nw(downloadUrl, version, flavor, platform, arch, c
     );
 
     await request(url, nwFileAbs);
+
+    return nwFileAbs;
 }

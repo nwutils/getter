@@ -1,36 +1,83 @@
 import fs from 'node:fs';
 import process from 'node:process';
-import stream from 'node:stream';
-
-import axios from 'axios';
+import http from 'node:http';
+import https from 'node:https';
+import { URL } from 'node:url';
 
 /**
  * Download from `url` and save at `filePath`.
- * @async
- * @function
- * @param  {string}        url       - Download server
- * @param  {string}        filePath  - file path of downloaded content
+ * @param {string} url
+ * @param {string} filePath
  * @returns {Promise<void>}
  */
-export default async function request(url, filePath) {
+export default function request(url, filePath) {
+  const parsedUrl = new URL(url);
+  const client = parsedUrl.protocol === 'https:' ? https : http;
 
-  const writeStream = fs.createWriteStream(filePath);
+  return new Promise((resolve, reject) => {
+    const writeStream = fs.createWriteStream(filePath);
 
-  /* Listen for SIGINT (Ctrl+C) */
-  process.on('SIGINT', function () {
-    /* Delete file if it exists. This prevents unnecessary `Central Directory not found` errors. */
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    /* Ctrl+C cleanup */
+    const onSigInt = () => {
+      writeStream.destroy();
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      process.exit();
+    };
+    process.once('SIGINT', onSigInt);
+
+    const req = client.get(
+      {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+        path: parsedUrl.pathname + parsedUrl.search,
+        headers: {
+          'User-Agent': 'node:http(s)'
+        }
+      },
+      (res) => {
+        /* Redirect handling */
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          cleanup();
+
+          const redirectedUrl = new URL(res.headers.location, parsedUrl).toString();
+          return resolve(request(redirectedUrl, filePath));
+        }
+
+        if (res.statusCode !== 200) {
+          cleanup();
+          return reject(new Error(`Request failed. Status code: ${res.statusCode}`));
+        }
+
+        res.pipe(writeStream);
+
+        writeStream.on('finish', () => {
+          cleanup();
+          resolve();
+        });
+
+        writeStream.on('error', (err) => {
+          cleanup();
+          reject(err);
+        });
+
+        res.on('error', (err) => {
+          cleanup();
+          reject(err);
+        });
+      }
+    );
+
+    req.on('error', (err) => {
+      cleanup();
+      reject(err);
+    });
+
+    function cleanup() {
+      process.removeListener('SIGINT', onSigInt);
+      req.destroy();
+      writeStream.destroy();
     }
-    process.exit();
   });
-
-  const response = await axios({
-    method: 'get',
-    url: url,
-    responseType: 'stream'
-  });
-
-  await stream.promises.pipeline(response.data, writeStream);
-
 }

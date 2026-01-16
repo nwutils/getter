@@ -22,6 +22,6 @@ describe("getter test suite", function () {
             shaSum: true,
         });
 
-        assert.ok(fs.existsSync("./cache/nwjs-v0.106.0-linux-x64"), "File has been downloaded...");
+        assert.ok(fs.existsSync("./cache/nwjs-v0.107.0-linux-x64"), "File has been downloaded...");
     });
 });
