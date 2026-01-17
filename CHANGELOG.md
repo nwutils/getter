@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.6](https://github.com/nwutils/getter/compare/v0.1.5...v0.1.6) (2026-01-17)
+
+
+### Bug Fixes
+
+* return NW.js file path ([#9](https://github.com/nwutils/getter/issues/9)) ([3589c17](https://github.com/nwutils/getter/commit/3589c173df07b49698c7ef2899608920f5b37771))
+
+
+### Chores
+
+* **dependabot:** daily -&gt; monthly ([97deb87](https://github.com/nwutils/getter/commit/97deb8756dc1733dcba43f4830a5a9b1c2f337ab))
+* **test:** cover http request logic ([#11](https://github.com/nwutils/getter/issues/11)) ([97674b1](https://github.com/nwutils/getter/commit/97674b1243d26e44c151cc259a1375d44d3d677f))
+
 ## [0.1.5](https://github.com/nwutils/getter/compare/v0.1.4...v0.1.5) (2025-11-30)
 
 
