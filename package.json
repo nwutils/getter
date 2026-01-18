@@ -37,7 +37,7 @@
     "url": "git+https://github.com/nwutils/getter.git"
   },
   "scripts": {
-    "lint": "eslint ./**/*.js",
+    "lint": "eslint .",
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"tests/**/*\" \"tests/specs/*.test.js\""
   },
   "volta": {
@@ -52,6 +52,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "eslint": "^9.39.2",
+    "eslint-plugin-jsdoc": "^62.1.0",
     "globals": "^17.0.0"
   }
 }
