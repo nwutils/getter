@@ -37,5 +37,8 @@ jobs:
       - run: npm ci
         if: ${{ steps.release.outputs.release_created }}
 
+      - run: npm run type
+        if: ${{ steps.release.outputs.release_created }}
+
       - run: npm publish --tag latest --provenance --access public
         if: ${{ steps.release.outputs.release_created }}

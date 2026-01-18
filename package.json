@@ -26,6 +26,7 @@
   ],
   "license": "MIT",
   "main": "./src/main.js",
+  "types": "types",
   "type": "module",
   "files": [
     "LICENSE",
@@ -38,6 +39,7 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "type": "tsc",
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"tests/**/*\" \"tests/specs/*.test.js\""
   },
   "volta": {
@@ -53,6 +55,7 @@
     "@eslint/js": "^9.39.2",
     "eslint": "^9.39.2",
     "eslint-plugin-jsdoc": "^62.1.0",
-    "globals": "^17.0.0"
+    "globals": "^17.0.0",
+    "typescript": "^5.9.3"
   }
 }
