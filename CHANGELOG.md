@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/nwutils/getter/compare/v0.1.6...v0.2.0) (2026-01-18)
+
+
+### Features
+
+* support file protocol for options.manifestUrl ([#14](https://github.com/nwutils/getter/issues/14)) ([76b00d4](https://github.com/nwutils/getter/commit/76b00d4379f38644329c81ef264d5e67ce427425))
+
+
+### Bug Fixes
+
+* **deps:** security update for node-tar ([#12](https://github.com/nwutils/getter/issues/12)) ([28f991f](https://github.com/nwutils/getter/commit/28f991f89b51ffc98ab1d0fcc82298ac9496b322))
+
+
+### Chores
+
+* lint jsdoc comments ([96d71c2](https://github.com/nwutils/getter/commit/96d71c2fcb9da06bd616b71c5b5d97d62550c888))
+
 ## [0.1.6](https://github.com/nwutils/getter/compare/v0.1.5...v0.1.6) (2026-01-17)
 
 
