@@ -37,15 +37,21 @@
     "url": "git+https://github.com/nwutils/getter.git"
   },
   "scripts": {
+    "lint": "eslint ./**/*.js",
     "test": "node --test --experimental-test-coverage --test-coverage-exclude=\"tests/**/*\" \"tests/specs/*.test.js\""
   },
   "volta": {
-    "node": "24.9.0",
-    "npm": "11.6.2"
+    "node": "25.1.0",
+    "npm": "11.7.0"
   },
   "dependencies": {
     "semver": "^7.7.3",
     "tar": "^7.5.3",
     "yauzl-promise": "^4.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0"
   }
 }
