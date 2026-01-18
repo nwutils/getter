@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import process from "node:process";
 import url from "node:url";
 
 import semver from "semver";
@@ -17,9 +16,9 @@ import verify from "./verify.js";
  * @property {string | "latest" | "stable" | "lts"} version                    Runtime version
  * @property {"normal" | "sdk"}                     flavor                     Build flavor
  * @property {"linux" | "osx" | "win"}              platform                   Target platform
- * @property {"ia32" | "x64" | "arm64"}             arch                       Target arch
- * @property {"https://dl.nwjs.io"}                 downloadUrl                Download server
- * @property {"https://nwjs.io/versions.json"}      manifestUrl                Manifest URL
+ * @property {"ia32" | "x64" | "arm64"}             arch                       Target architecture
+ * @property {"https://dl.nwjs.io"}                 downloadUrl                Download server, accepts http and https
+ * @property {"https://nwjs.io/versions.json"}      manifestUrl                Manifest URI, accepts file, http and https
  * @property {string}                               cacheDir                   Cache directory
  * @property {boolean}                              cache                      If false, remove cache and redownload.
  * @property {boolean}                              ffmpeg                     If true, ffmpeg is not downloaded.
@@ -50,7 +49,10 @@ async function get(options) {
   }
   const manifestData = JSON.parse(await fs.promises.readFile(manifestFilePath, "utf-8"));
 
-  if (options.version === "latest" | options.version === "stable" | options.version === "lts") {
+  if (options.version === "latest"
+    || options.version === "stable"
+    || options.version === "lts"
+  ) {
     options.version = manifestData[options.version].slice(1);
   } else if (semver.valid(semver.coerce(options.version))) {
     options.version = semver.coerce(options.version).version;
@@ -76,6 +78,14 @@ async function get(options) {
 
   if (typeof options.manifestUrl !== "string") {
     throw new Error('Expected "options.manifestUrl" to be a string. Received: ' + options.manifestUrl);
+  }
+
+  if (typeof options.manifestUrl == "string"
+    && options.manifestUrl.startsWith('file://') === false
+    && options.manifestUrl.startsWith('http://') === false
+    && options.manifestUrl.startsWith('https://') === false
+  ) {
+    throw new Error('Expected "options.manifestUrl" to be a string starting with "file://", "http://", or "https://". Received: ' + options.manifestUrl);
   }
 
   if (typeof options.cacheDir !== "string") {
