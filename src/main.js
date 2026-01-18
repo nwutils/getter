@@ -42,7 +42,12 @@ async function get(options) {
   }
 
   const manifestFilePath = path.resolve(options.cacheDir, "manifest.json");
-  await request(options.manifestUrl, manifestFilePath);
+  if (options.manifestUrl.startsWith('file://')) {
+    const filePath = url.fileURLToPath(options.manifestUrl);
+    fs.writeFileSync(manifestFilePath, fs.readFileSync(filePath, 'utf-8'));
+  } else {
+    await request(options.manifestUrl, manifestFilePath);
+  }
   const manifestData = JSON.parse(await fs.promises.readFile(manifestFilePath, "utf-8"));
 
   if (options.version === "latest" | options.version === "stable" | options.version === "lts") {
