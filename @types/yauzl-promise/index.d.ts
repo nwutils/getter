@@ -15,7 +15,8 @@ declare module 'yauzl-promise' {
   export function open(path: string): Promise<ZipFile>;
   
   namespace yauzl {
-    export { Entry, ZipFile, open };
+    export type { Entry, ZipFile };
+    export { open };
   }
   
   export default yauzl;
