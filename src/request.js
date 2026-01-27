@@ -44,7 +44,7 @@ export default function request(url, filePath) {
       },
       (res) => {
         /* Redirect handling */
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        if (res.statusCode !== undefined && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           cleanup();
 
           const redirectedUrl = new URL(res.headers.location, parsedUrl).toString();
