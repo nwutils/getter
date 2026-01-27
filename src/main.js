@@ -54,10 +54,13 @@ async function get(options) {
     || options.version === "lts"
   ) {
     options.version = manifestData[options.version].slice(1);
-  } else if (semver.valid(semver.coerce(options.version))) {
-    options.version = semver.coerce(options.version).version;
   } else {
-    throw new Error('Expected "options.version" to be "latest", "stable", "lts" or a valid semver version. Received: ' + options.version);
+    const coerced = semver.coerce(options.version);
+    if (coerced && semver.valid(coerced)) {
+      options.version = coerced.version;
+    } else {
+      throw new Error('Expected "options.version" to be "latest", "stable", "lts" or a valid semver version. Received: ' + options.version);
+    }
   }
 
   if (options.flavor !== "normal" && options.flavor !== "sdk") {
