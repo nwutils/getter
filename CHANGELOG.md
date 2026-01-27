@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1](https://github.com/nwutils/getter/compare/v0.2.0...v0.2.1) (2026-01-27)
+
+
+### Bug Fixes
+
+* **deps:** bump tar from 7.5.3 to 7.5.4 ([#16](https://github.com/nwutils/getter/issues/16)) ([1c83356](https://github.com/nwutils/getter/commit/1c833568d3c955e5a70f3be435d7e0f763c4d5ae))
+
+
+### Chores
+
+* convert JSDoc comments to TypeScript types ([da83de8](https://github.com/nwutils/getter/commit/da83de8a00eb155fd352b8ca9f6c4a66649823e9))
+
 ## [0.2.0](https://github.com/nwutils/getter/compare/v0.1.6...v0.2.0) (2026-01-18)
 
 
