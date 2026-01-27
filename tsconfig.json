@@ -12,8 +12,7 @@
     "moduleResolution": "node",
     "types": ["node"],
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "typeRoots": ["./node_modules/@types", "./@types"]
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*.js"
