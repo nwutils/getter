@@ -41,6 +41,9 @@ jobs:
       - name: Check for type errors
         run: npm run type
 
+      - name: Check for typing errors
+        run: npm run type
+
       - name: Run tests with coverage
         id: coverage
         shell: bash
