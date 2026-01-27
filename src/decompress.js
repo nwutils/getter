@@ -87,9 +87,8 @@ async function unzip(zippedFile, cacheDir) {
   for (const symlinkEntry of symlinks) {
     let entryPathAbs = path.join(cacheDir, symlinkEntry.filename);
     const readStream = await symlinkEntry.openReadStream();
-    /** @type {Buffer[]} */
     const chunks = [];
-    readStream.on('data', (/** @type {Buffer} */ chunk) => chunks.push(chunk));
+    readStream.on('data', (chunk) => chunks.push(chunk));
     await new Promise(resolve => readStream.on('end', resolve));
     const linkTarget = Buffer.concat(chunks).toString('utf8').trim();
 

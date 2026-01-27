@@ -35,5 +35,4 @@ export default async function ffmpeg(downloadUrl, version, platform, arch, cache
     );
     
     await request(url, ffmpegFileAbs);
-    return ffmpegFileAbs;
 }

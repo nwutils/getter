@@ -45,5 +45,4 @@ export default async function nw(downloadUrl, version, cacheDir) {
   );
 
   await request(url, nwFileAbs);
-  return nwFileAbs;
 }
