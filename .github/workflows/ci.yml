@@ -37,6 +37,9 @@ jobs:
 
       - name: Check for linting errors
         run: npm run lint
+      
+      - name: Check for type errors
+        run: npm run type
 
       - name: Run tests with coverage
         id: coverage
