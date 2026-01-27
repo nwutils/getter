@@ -55,7 +55,10 @@ async function get(options) {
   ) {
     options.version = manifestData[options.version].slice(1);
   } else if (semver.valid(semver.coerce(options.version))) {
-    options.version = semver.coerce(options.version).version;
+    const coerced = semver.coerce(options.version);
+    if (coerced) {
+      options.version = coerced.version;
+    }
   } else {
     throw new Error('Expected "options.version" to be "latest", "stable", "lts" or a valid semver version. Received: ' + options.version);
   }
