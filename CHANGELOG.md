@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/nwutils/getter/compare/v0.2.1...v0.2.2) (2026-01-27)
+
+
+### Chores
+
+* **ci:** add type check in CI ([93b5361](https://github.com/nwutils/getter/commit/93b5361f21b074fe05ee809d54f70945a6156f3e))
+* **ci:** fix types ([#18](https://github.com/nwutils/getter/issues/18)) ([9e4c74e](https://github.com/nwutils/getter/commit/9e4c74e97e501ed6fc540ff7abba9b4e97ec881a))
+
 ## [0.2.1](https://github.com/nwutils/getter/compare/v0.2.0...v0.2.1) (2026-01-27)
 
 
