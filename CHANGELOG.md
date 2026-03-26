@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.3](https://github.com/nwutils/getter/compare/v0.2.2...v0.2.3) (2026-03-26)
+
+
+### Bug Fixes
+
+* **deps:** bump tar from 7.5.10 to 7.5.11 ([#29](https://github.com/nwutils/getter/issues/29)) ([77aaf71](https://github.com/nwutils/getter/commit/77aaf71f58a7adc76ecf6367f205ffc56d828e2e))
+* **deps:** bump tar from 7.5.9 to 7.5.10 ([#28](https://github.com/nwutils/getter/issues/28)) ([a699f93](https://github.com/nwutils/getter/commit/a699f9374658b6747dda698df095b4f5dde40cf0))
+* export types ([dfcdd17](https://github.com/nwutils/getter/commit/dfcdd17335067674ca46a290eb6df9435deb11b4))
+
+
+### Chores
+
+* **deps:** bump flatted from 3.3.3 to 3.4.2 ([#30](https://github.com/nwutils/getter/issues/30)) ([20cd4ca](https://github.com/nwutils/getter/commit/20cd4ca549025bf958e22b15e0fb7ac9a905fe79))
+* **deps:** bump tar from 7.5.4 to 7.5.7 ([#21](https://github.com/nwutils/getter/issues/21)) ([969220c](https://github.com/nwutils/getter/commit/969220c53612e72b0ebbe7f9ded131fac78a3786))
+* **deps:** bump the gha group in /.github/workflows with 2 updates ([#23](https://github.com/nwutils/getter/issues/23)) ([6373ad3](https://github.com/nwutils/getter/commit/6373ad3cbb9756e975b58c6fd4c0812a01e31d41))
+* **deps:** bump the npm group across 1 directory with 7 updates ([#26](https://github.com/nwutils/getter/issues/26)) ([e35e8b1](https://github.com/nwutils/getter/commit/e35e8b1b51aced61f5d52f4206abfd08fe373a79))
+
 ## [0.2.2](https://github.com/nwutils/getter/compare/v0.2.1...v0.2.2) (2026-01-27)
 
 
