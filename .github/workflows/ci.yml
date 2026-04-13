@@ -83,7 +83,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           key: coverage-${{ matrix.os }}
           header: "Coverage Report – ${{ matrix.os }}"
