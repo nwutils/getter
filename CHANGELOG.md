@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/nwutils/getter/compare/v0.2.4...v0.2.5) (2026-04-13)
+
+
+### Chores
+
+* **deps:** bump the gha group in /.github/workflows with 2 updates ([#32](https://github.com/nwutils/getter/issues/32)) ([363e4d6](https://github.com/nwutils/getter/commit/363e4d6d53672d4488dccfc1197df39f9d1efb10))
+
 ## [0.2.4](https://github.com/nwutils/getter/compare/v0.2.3...v0.2.4) (2026-03-26)
 
 
