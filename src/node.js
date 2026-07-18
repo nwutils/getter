@@ -1,5 +1,7 @@
 import path from 'node:path';
 
+import semver from 'semver';
+
 import request from './request.js';
 
 /**
@@ -27,13 +29,19 @@ export default async function nw(downloadUrl, version, cacheDir) {
   const nwFile = `${nodeDir}.tar.gz`;
 
   /**
+   * Prefix of Node headers file name. For reference: [nwjs/nw.js@471e406](https://github.com/nwjs/nw.js/blob/471e406/lib/node.js)
+   * @type {string}
+   */
+  const headersPrefix = semver.gte(version, '0.111.3') ? 'node' : 'nw-headers';
+
+  /**
    * URL to download specific Node headers from.
    * @type {string}
    */
   const url = [
     downloadUrl,
     `v${version}`,
-    `nw-headers-v${version}.tar.gz`
+    `${headersPrefix}-v${version}.tar.gz`
   ].join('/');
 
   /**
