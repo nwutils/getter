@@ -19,12 +19,27 @@ jobs:
       matrix:
         os:
           - macos-26
-          - macos26-intel
+          - macos-26-intel
           - ubuntu-24.04
           - ubuntu-24.04-arm
           - windows-2025
           - windows-11-arm
+        include:
+          - os: macos-26
+            display: macOS 26 (Apple Silicon)
+          - os: macos-26-intel
+            display: macOS 26 (Intel)
+          - os: ubuntu-24.04
+            display: Ubuntu 24.04
+          - os: ubuntu-24.04-arm
+            display: Ubuntu 24.04 (ARM)
+          - os: windows-2025
+            display: Windows Server 2025
+          - os: windows-11-arm
+            display: Windows 11 (ARM)
       fail-fast: false
+
+    name: ${{ matrix.display }}
 
     runs-on: ${{ matrix.os }}
 
