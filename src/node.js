@@ -1,8 +1,8 @@
-import path from 'node:path';
+import path from "node:path";
 
-import semver from 'semver';
+import semver from "semver";
 
-import request from './request.js';
+import request from "./request.js";
 
 /**
  * Download NW.js's Node.js headers.
@@ -15,7 +15,6 @@ import request from './request.js';
  * @returns {Promise<string>}             - path of compressed file which contains the Node headers.
  */
 export default async function nw(downloadUrl, version, cacheDir) {
-
   /**
    * Name of directory which contains Node headers.
    * @type {string}
@@ -32,7 +31,7 @@ export default async function nw(downloadUrl, version, cacheDir) {
    * Prefix of Node headers file name. For reference: [nwjs/nw.js@471e406](https://github.com/nwjs/nw.js/blob/471e406/lib/node.js)
    * @type {string}
    */
-  const headersPrefix = semver.gte(version, '0.111.3') ? 'node' : 'nw-headers';
+  const headersPrefix = semver.gte(version, "0.111.3") ? "node" : "nw-headers";
 
   /**
    * URL to download specific Node headers from.
@@ -41,16 +40,13 @@ export default async function nw(downloadUrl, version, cacheDir) {
   const url = [
     downloadUrl,
     `v${version}`,
-    `${headersPrefix}-v${version}.tar.gz`
-  ].join('/');
+    `${headersPrefix}-v${version}.tar.gz`,
+  ].join("/");
 
   /**
    * Absolute path of compressed file which contains Node headers.
    */
-  const nwFileAbs = path.resolve(
-    cacheDir,
-    nwFile
-  );
+  const nwFileAbs = path.resolve(cacheDir, nwFile);
 
   await request(url, nwFileAbs);
   return nwFileAbs;
