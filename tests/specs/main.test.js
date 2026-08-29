@@ -66,4 +66,23 @@ describe("getter test suite", function () {
       /filesystem root/,
     );
   });
+
+  it("throws when manifestUrl file:/// path is not valid JSON", async function () {
+    await assert.rejects(
+      get({
+        version: "0.107.0",
+        flavor: "normal",
+        platform: "linux",
+        arch: "x64",
+        downloadUrl: "https://dl.nwjs.io",
+        manifestUrl: `file:///${process.cwd()}/tests/fixtures/request_test.txt`,
+        cacheDir: "./cache",
+        cache: true,
+        ffmpeg: false,
+        nativeAddon: false,
+        shaSum: true,
+      }),
+      /valid JSON/,
+    );
+  });
 });

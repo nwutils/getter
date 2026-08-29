@@ -42,7 +42,22 @@ async function get(options) {
   const manifestFilePath = path.resolve(options.cacheDir, "manifest.json");
   if (options.manifestUrl.startsWith("file://")) {
     const filePath = url.fileURLToPath(options.manifestUrl);
-    fs.writeFileSync(manifestFilePath, fs.readFileSync(filePath, "utf-8"));
+    const manifestContents = fs.readFileSync(filePath, "utf-8");
+
+    /*
+     * `manifestUrl` can point at any local path the caller supplies. Refuse
+     * to copy it into cacheDir unless it's actually a JSON manifest, rather
+     * than blindly persisting whatever bytes were found at that path.
+     */
+    try {
+      JSON.parse(manifestContents);
+    } catch {
+      throw new Error(
+        `Expected "options.manifestUrl" file to contain valid JSON. Received: ${JSON.stringify(options.manifestUrl)}`,
+      );
+    }
+
+    fs.writeFileSync(manifestFilePath, manifestContents);
   } else {
     await request(options.manifestUrl, manifestFilePath);
   }
