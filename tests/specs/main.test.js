@@ -25,6 +25,35 @@ describe("getter test suite", function () {
     assert.strictEqual(fs.existsSync("./cache/nwjs-v0.107.0-linux-x64"), true);
   });
 
+  it("downloads and verifies node headers when nativeAddon is enabled", async function () {
+    if (!fs.existsSync("./cache/nw-headers-v0.107.0.tar.gz")) {
+      await get({
+        version: "0.107.0",
+        flavor: "normal",
+        platform: "linux",
+        arch: "x64",
+        downloadUrl: "https://dl.nwjs.io",
+        manifestUrl: "https://nwjs.io/versions.json",
+        cacheDir: "./cache",
+        cache: true,
+        ffmpeg: false,
+        nativeAddon: true,
+        shaSum: true,
+      });
+    }
+
+    /*
+     * The file is saved under the same name SHASUMS256.txt lists it under
+     * ("nw-headers-..." for this pre-0.111.3 version, not "node-..."), so
+     * that verify() can actually find and check it - if verification had
+     * silently found nothing, shaSum: true above would have thrown.
+     */
+    assert.strictEqual(
+      fs.existsSync("./cache/nw-headers-v0.107.0.tar.gz"),
+      true,
+    );
+  });
+
   it("parses manifestUrl file:/// path correctly", async function () {
     await get({
       version: "0.107.0",

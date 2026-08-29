@@ -6,7 +6,7 @@ import semver from "semver";
 
 import decompress from "./decompress.js";
 import ffmpeg from "./ffmpeg.js";
-import node from "./node.js";
+import node, { headersFileName } from "./node.js";
 import nw from "./nw.js";
 import request from "./request.js";
 import verify from "./verify.js";
@@ -349,7 +349,7 @@ async function get(options) {
      */
     let nodeFilePath = path.resolve(
       options.cacheDir,
-      `headers-v${options.version}.tar.gz`,
+      headersFileName(options.version),
     );
 
     // If `options.cache` is false, then remove the compressed binary.
@@ -368,6 +368,20 @@ async function get(options) {
         options.cacheDir,
       );
     }
+
+    /*
+     * Unlike the community ffmpeg build, SHASUMS256.txt already publishes a
+     * checksum for the Node headers tarball - verify it the same way as the
+     * main archive, before extracting it.
+     */
+    await verify(
+      `${checksumHost}/v${options.version}/SHASUMS256.txt`,
+      `${options.cacheDir}/shasum/${options.version}.txt`,
+      options.cacheDir,
+      options.ffmpeg,
+      options.shaSum,
+      headersFileName(options.version),
+    );
 
     await decompress(nodeFilePath, options.cacheDir);
   }
