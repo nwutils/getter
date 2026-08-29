@@ -27,7 +27,7 @@ export default async function decompress(filePath, cacheDir) {
 
 /**
  * Prevent any `entryName` from escaping the `root` leading to Zip Slip via the symlink.
- * 
+ *
  * @param {string} root       - directory every entry must stay within
  * @param {string} entryName  - entry name as recorded in the archive
  * @throws {Error}             - when the entry resolves outside `root`
