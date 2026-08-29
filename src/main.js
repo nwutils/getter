@@ -224,9 +224,20 @@ async function get(options) {
     );
   }
 
+  /*
+   * Checksums are always fetched from the canonical NW.js host, even when
+   * `downloadUrl` points at a different mirror. Otherwise a compromised or
+   * malicious mirror could serve both the binary and the checksum used to
+   * "verify" it, making the check worthless against a hostile source. A
+   * `file://` `downloadUrl` is local mirror/offline mode, so it still
+   * resolves the checksum file from there rather than requiring network access.
+   */
+  const checksumHost =
+    uri.protocol === "file:" ? options.downloadUrl : "https://dl.nwjs.io";
+
   /* Verify the archive's checksum before extracting its contents. */
   await verify(
-    `${options.downloadUrl}/v${options.version}/SHASUMS256.txt`,
+    `${checksumHost}/v${options.version}/SHASUMS256.txt`,
     `${options.cacheDir}/shasum/${options.version}.txt`,
     options.cacheDir,
     options.ffmpeg,
