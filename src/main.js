@@ -224,8 +224,7 @@ async function get(options) {
     );
   }
 
-  await decompress(nwFilePath, options.cacheDir);
-
+  /* Verify the archive's checksum before extracting its contents. */
   await verify(
     `${options.downloadUrl}/v${options.version}/SHASUMS256.txt`,
     `${options.cacheDir}/shasum/${options.version}.txt`,
@@ -233,6 +232,8 @@ async function get(options) {
     options.ffmpeg,
     options.shaSum,
   );
+
+  await decompress(nwFilePath, options.cacheDir);
 
   if (options.ffmpeg === true) {
     /**
