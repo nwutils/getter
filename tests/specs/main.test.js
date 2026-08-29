@@ -47,4 +47,23 @@ describe("getter test suite", function () {
     );
     assert.strictEqual(localManifestFile.latest, "v0.106.1");
   });
+
+  it("throws when downloadUrl file:/// path is a filesystem root", async function () {
+    await assert.rejects(
+      get({
+        version: "0.107.0",
+        flavor: "normal",
+        platform: "linux",
+        arch: "x64",
+        downloadUrl: "file:///",
+        manifestUrl: `file:///${process.cwd()}/tests/fixtures/main_manifest.json`,
+        cacheDir: "./cache",
+        cache: true,
+        ffmpeg: false,
+        nativeAddon: false,
+        shaSum: true,
+      }),
+      /filesystem root/,
+    );
+  });
 });

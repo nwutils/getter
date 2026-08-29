@@ -159,9 +159,23 @@ async function get(options) {
 
   /* Download server is the cached directory. */
   if (uri.protocol === "file:") {
-    options.cacheDir = path.resolve(
+    const mirrorDir = path.resolve(
       decodeURIComponent(options.downloadUrl.slice("file://".length)),
     );
+
+    /*
+     * `cacheDir` is used as the root for a recursive delete and for archive
+     * extraction. A filesystem root has no parent to contain those operations,
+     * so refuse it rather than let a mistyped or attacker-influenced
+     * `downloadUrl` point either at the whole drive.
+     */
+    if (mirrorDir === path.parse(mirrorDir).root) {
+      throw new Error(
+        `Expected "options.downloadUrl" file path to not be a filesystem root. Received: ${JSON.stringify(mirrorDir)}`,
+      );
+    }
+
+    options.cacheDir = mirrorDir;
   }
 
   /**
