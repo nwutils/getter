@@ -26,16 +26,8 @@ export default async function decompress(filePath, cacheDir) {
 }
 
 /**
- * Resolve `entryName` inside `root`, refusing anything that escapes it.
- *
- * A zip entry's name is attacker-controlled data, not a trusted path. An entry
- * called `../../evil` makes `path.join(root, name)` resolve outside `root`,
- * which is the zip-slip write primitive (CWE-22). Resolving first and then
- * checking the prefix is what makes the guard total - it also catches absolute
- * names and `..` buried mid-path.
- *
- * The trailing separator matters: without it `/tmp/cache-evil` would pass as
- * being inside `/tmp/cache`.
+ * Prevent any `entryName` from escaping the `root` leading to Zip Slip via the symlink.
+ * 
  * @param {string} root       - directory every entry must stay within
  * @param {string} entryName  - entry name as recorded in the archive
  * @throws {Error}             - when the entry resolves outside `root`
@@ -116,7 +108,10 @@ async function unzip(zippedFile, cacheDir) {
     /** @type {Buffer[]} */
     const chunks = [];
     readStream.on("data", (chunk) => chunks.push(chunk));
-    await new Promise((resolve) => readStream.on("end", resolve));
+    await new Promise((resolve, reject) => {
+      readStream.on("end", resolve);
+      readStream.on("error", reject);
+    });
     const linkTarget = Buffer.concat(chunks).toString("utf8").trim();
 
     /*
@@ -125,7 +120,13 @@ async function unzip(zippedFile, cacheDir) {
      * Resolve the target relative to the link's own directory and require it
      * to stay inside cacheDir as well.
      */
-    resolveWithin(cacheDir, path.relative(cacheDir, path.resolve(path.dirname(entryPathAbs), linkTarget)));
+    resolveWithin(
+      cacheDir,
+      path.relative(
+        cacheDir,
+        path.resolve(path.dirname(entryPathAbs), linkTarget),
+      ),
+    );
 
     /* Check if the symlink or a file/directory already exists at the destination */
     if (fs.existsSync(entryPathAbs)) {
