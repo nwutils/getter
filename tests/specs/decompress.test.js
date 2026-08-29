@@ -28,7 +28,6 @@ describe("decompress test suite", function () {
 
   it(
     "decompresses a .zip file",
-    { skip: platform === "linux" },
     async function () {
       await decompress(nwFilePath, path.resolve("cache"));
       assert.strictEqual(fs.existsSync(outFilePath), true);
