@@ -16,8 +16,20 @@ import yauzl from "yauzl-promise";
  */
 export default async function decompress(filePath, cacheDir) {
   if (filePath.endsWith(".zip")) {
+    /*
+     * Every entry unzip() writes is resolved through resolveWithin() first -
+     * file entries, symlink names and symlink targets alike. The rule reports
+     * the call site rather than the write site, so it cannot see that guard
+     * from here.
+     */
+    // eslint-disable-next-line node-security/no-zip-slip
     await unzip(filePath, cacheDir);
   } else {
+    /*
+     * node-tar v7 strips `..` segments and absolute paths itself unless
+     * `preservePaths` is set, and it is not set here.
+     */
+    // eslint-disable-next-line node-security/no-zip-slip
     await tar.extract({
       file: filePath,
       C: cacheDir,
