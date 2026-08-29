@@ -257,6 +257,7 @@ async function get(options) {
     options.cacheDir,
     options.ffmpeg,
     options.shaSum,
+    path.basename(nwFilePath),
   );
 
   await decompress(nwFilePath, options.cacheDir);
